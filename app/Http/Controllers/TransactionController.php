@@ -127,4 +127,44 @@ class TransactionController extends Controller
             'net_balance_formatted' => currency_format($netBalance),
         ]);
     }
+
+    public function weeklySummary(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date'
+        ]);
+
+        $date = $request->date;
+        $userId = auth()->id();
+
+        // Calculate week start (Monday) and end (Sunday)
+        $weekStart = \Carbon\Carbon::parse($date)->startOfWeek();
+        $weekEnd = \Carbon\Carbon::parse($date)->endOfWeek();
+
+        // Get transactions for the week
+        $transactions = Transaction::where('user_id', $userId)
+            ->whereBetween('date', [$weekStart, $weekEnd])
+            ->get();
+
+        // Calculate totals
+        $income = $transactions->where('type', 'income')->sum('amount');
+        $expenses = $transactions->where('type', 'expense')->sum('amount');
+        $netBalance = $income - $expenses;
+        $dailyAverage = $transactions->count() > 0 ? $expenses / 7 : 0;
+
+        return response()->json([
+            'week_start' => $weekStart->format('Y-m-d'),
+            'week_end' => $weekEnd->format('Y-m-d'),
+            'week_range' => $weekStart->format('M d') . ' - ' . $weekEnd->format('M d, Y'),
+            'transaction_count' => $transactions->count(),
+            'income' => $income,
+            'income_formatted' => currency_format($income),
+            'expenses' => $expenses,
+            'expenses_formatted' => currency_format($expenses),
+            'net_balance' => $netBalance,
+            'net_balance_formatted' => currency_format($netBalance),
+            'daily_average' => $dailyAverage,
+            'daily_average_formatted' => currency_format($dailyAverage),
+        ]);
+    }
 }

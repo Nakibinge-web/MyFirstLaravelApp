@@ -65,14 +65,14 @@ class BudgetController extends Controller
         
         // Recalculate dates based on period
         if ($data['period'] === 'weekly') {
-            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfWeek();
-            $endDate = $startDate->copy()->endOfWeek();
+            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfDay();
+            $endDate = $startDate->copy()->addDays(6)->endOfDay();
         } elseif ($data['period'] === 'monthly') {
-            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfMonth();
-            $endDate = $startDate->copy()->endOfMonth();
+            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfDay();
+            $endDate = $startDate->copy()->addDays(29)->endOfDay();
         } else {
-            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfYear();
-            $endDate = $startDate->copy()->endOfYear();
+            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfDay();
+            $endDate = $startDate->copy()->addDays(364)->endOfDay();
         }
 
         $budget->update([

@@ -22,6 +22,7 @@ Route::middleware(['guest', 'throttle:10,1'])->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/logout', [LoginController::class, 'logout'])->name('logout.get');
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
@@ -32,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update')->middleware('throttle:5,1');
     
     Route::get('transactions/daily-summary', [\App\Http\Controllers\TransactionController::class, 'dailySummary'])->name('transactions.daily-summary');
+    Route::get('transactions/weekly-summary', [\App\Http\Controllers\TransactionController::class, 'weeklySummary'])->name('transactions.weekly-summary');
     Route::resource('transactions', \App\Http\Controllers\TransactionController::class);
     Route::resource('categories', \App\Http\Controllers\CategoryController::class)->except(['show']);
     Route::resource('budgets', \App\Http\Controllers\BudgetController::class)->except(['show']);

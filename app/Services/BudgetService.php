@@ -63,8 +63,10 @@ class BudgetService
 
     public function createMonthlyBudget(array $data): Budget
     {
-        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfMonth();
-        $endDate = $startDate->copy()->endOfMonth();
+        // Start from the selected date (or today if not provided)
+        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfDay();
+        // End date is 30 days from start date
+        $endDate = $startDate->copy()->addDays(29)->endOfDay();
 
         return Budget::create([
             'user_id' => $data['user_id'],
@@ -78,8 +80,10 @@ class BudgetService
 
     public function createWeeklyBudget(array $data): Budget
     {
-        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfWeek();
-        $endDate = $startDate->copy()->endOfWeek();
+        // Start from the selected date (or today if not provided)
+        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfDay();
+        // End date is 7 days from start date
+        $endDate = $startDate->copy()->addDays(6)->endOfDay();
 
         return Budget::create([
             'user_id' => $data['user_id'],
@@ -93,8 +97,10 @@ class BudgetService
 
     public function createYearlyBudget(array $data): Budget
     {
-        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfYear();
-        $endDate = $startDate->copy()->endOfYear();
+        // Start from the selected date (or today if not provided)
+        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfDay();
+        // End date is 365 days from start date
+        $endDate = $startDate->copy()->addDays(364)->endOfDay();
 
         return Budget::create([
             'user_id' => $data['user_id'],
