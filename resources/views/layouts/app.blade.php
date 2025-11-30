@@ -102,12 +102,12 @@
                         </svg>
                         <span>Profile</span>
                     </a>
-                    <a href="{{ route('logout.get') }}" class="w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-lg hover:bg-gray-800 transition-colors text-left" onclick="return confirm('Are you sure you want to logout?')">
+                    <button onclick="openLogoutModal()" class="w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-lg hover:bg-gray-800 transition-colors text-left">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                         </svg>
                         <span>Logout</span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </aside>
@@ -168,6 +168,11 @@
         @yield('content')
     </main>
     @endguest
+
+    @auth
+    <!-- Logout Confirmation Modal -->
+    @include('components.logout-modal')
+    @endauth
 
     <!-- Scripts -->
     <script src="{{ asset('js/validation.js') }}"></script>

@@ -6,6 +6,7 @@ use App\Http\Requests\TransactionRequest;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\TransactionService;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
@@ -93,6 +94,9 @@ class TransactionController extends Controller
         $this->authorize('delete', $transaction);
         
         $this->transactionService->deleteTransaction($transaction);
+
+        // Clear transaction-related cache
+        CacheService::clearTransactionCache(auth()->id());
 
         return redirect()->route('transactions.index')->with('success', 'Transaction deleted successfully.');
     }

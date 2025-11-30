@@ -45,11 +45,11 @@
                 <div class="mb-4">
                     <div class="flex justify-between text-lg mb-2">
                         <span class="text-gray-600">Current</span>
-                        <span class="font-bold text-2xl">${{ number_format($goal->current_amount, 2) }}</span>
+                        <span class="font-bold text-2xl">{{ currency_format($goal->current_amount) }}</span>
                     </div>
                     <div class="flex justify-between text-lg mb-2">
                         <span class="text-gray-600">Target</span>
-                        <span class="font-bold text-2xl">${{ number_format($goal->target_amount, 2) }}</span>
+                        <span class="font-bold text-2xl">{{ currency_format($goal->target_amount) }}</span>
                     </div>
                     
                     <div class="w-full bg-gray-200 rounded-full h-6 mt-4">
@@ -60,7 +60,7 @@
                     </div>
                     
                     <div class="flex justify-between text-sm mt-2">
-                        <span class="text-gray-600">${{ number_format($progress['remaining'], 2) }} remaining</span>
+                        <span class="text-gray-600">{{ currency_format($progress['remaining']) }} remaining</span>
                         @if($progress['is_completed'])
                             <span class="text-green-600 font-semibold">✓ Goal Achieved!</span>
                         @endif

@@ -250,6 +250,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     let spendingChart;
+    const currencySymbol = '{{ currency_symbol() }}';
+    const currencyCode = '{{ auth()->user()->currency ?? 'USD' }}';
+    
+    // Currencies that have symbol after amount
+    const symbolAfterCurrencies = ['EUR', 'SEK', 'NOK', 'DKK', 'CZK', 'HUF', 'PLN'];
+    const symbolAfter = symbolAfterCurrencies.includes(currencyCode);
 
     // Initialize Spending Trend Chart
     function initSpendingChart(data) {
@@ -273,14 +279,28 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                if (symbolAfter) {
+                                    return value.toLocaleString() + ' ' + currencySymbol;
+                                }
+                                return currencySymbol + value.toLocaleString();
+                            }
+                        }
+                    }
                 },
                 scales: {
                     y: { 
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                if (symbolAfter) {
+                                    return value.toLocaleString() + ' ' + currencySymbol;
+                                }
+                                return currencySymbol + value.toLocaleString();
                             }
                         }
                     }
@@ -294,12 +314,20 @@
 
     // Format currency
     function formatCurrency(amount) {
-        return '$' + parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const formatted = parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        if (symbolAfter) {
+            return formatted + ' ' + currencySymbol;
+        }
+        return currencySymbol + formatted;
     }
 
     // Format currency with decimals
     function formatCurrencyDecimals(amount) {
-        return '$' + parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formatted = parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (symbolAfter) {
+            return formatted + ' ' + currencySymbol;
+        }
+        return currencySymbol + formatted;
     }
 
     // Refresh dashboard data

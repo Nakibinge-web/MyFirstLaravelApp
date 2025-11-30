@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\BudgetService;
 use App\Services\DashboardService;
 use App\Services\GoalService;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -25,50 +26,60 @@ class DashboardController extends Controller
     public function index()
     {
         $userId = auth()->id();
+        $cacheKey = "dashboard_data_user_{$userId}";
+        $cacheTTL = config('cache-settings.ttl.dashboard', 300);
 
-        // Get monthly stats
-        $monthlyStats = $this->dashboardService->getMonthlyStats($userId);
+        // Cache dashboard data for 5 minutes
+        $dashboardData = Cache::remember($cacheKey, $cacheTTL, function () use ($userId) {
+            // Get monthly stats
+            $monthlyStats = $this->dashboardService->getMonthlyStats($userId);
 
-        // Get recent transactions (last 5)
-        $recentTransactions = $this->dashboardService->getRecentTransactions($userId, 5);
+            // Get recent transactions (last 5)
+            $recentTransactions = $this->dashboardService->getRecentTransactions($userId, 5);
 
-        // Get active budgets with utilization
-        $budgets = $this->dashboardService->getActiveBudgets($userId);
-        $budgetsWithUtilization = $budgets->map(function ($budget) {
-            $budget->utilization = $this->budgetService->calculateUtilization($budget);
-            return $budget;
+            // Get active budgets with utilization
+            $budgets = $this->dashboardService->getActiveBudgets($userId);
+            $budgetsWithUtilization = $budgets->map(function ($budget) {
+                $budget->utilization = $this->budgetService->calculateUtilization($budget);
+                return $budget;
+            });
+
+            // Get active goals with progress
+            $goals = $this->dashboardService->getActiveGoals($userId, 5);
+            $goalsWithProgress = $goals->map(function ($goal) {
+                $goal->progress = $this->goalService->calculateProgress($goal);
+                return $goal;
+            });
+
+            // Get net worth
+            $netWorth = $this->dashboardService->calculateNetWorth($userId);
+
+            // Get quick stats
+            $quickStats = $this->dashboardService->getQuickStats($userId);
+
+            // Get spending trend (last 7 days)
+            $spendingTrend = $this->dashboardService->getSpendingTrend($userId, 7);
+
+            return compact(
+                'monthlyStats',
+                'recentTransactions',
+                'budgetsWithUtilization',
+                'goalsWithProgress',
+                'netWorth',
+                'quickStats',
+                'spendingTrend'
+            );
         });
 
-        // Get active goals with progress
-        $goals = $this->dashboardService->getActiveGoals($userId, 5);
-        $goalsWithProgress = $goals->map(function ($goal) {
-            $goal->progress = $this->goalService->calculateProgress($goal);
-            return $goal;
-        });
-
-        // Get net worth
-        $netWorth = $this->dashboardService->calculateNetWorth($userId);
-
-        // Get quick stats
-        $quickStats = $this->dashboardService->getQuickStats($userId);
-
-        // Get spending trend (last 7 days)
-        $spendingTrend = $this->dashboardService->getSpendingTrend($userId, 7);
-
-        return view('dashboard', compact(
-            'monthlyStats',
-            'recentTransactions',
-            'budgetsWithUtilization',
-            'goalsWithProgress',
-            'netWorth',
-            'quickStats',
-            'spendingTrend'
-        ));
+        return view('dashboard', $dashboardData);
     }
 
     public function refresh()
     {
         $userId = auth()->id();
+        
+        // Clear cache for this user
+        Cache::forget("dashboard_data_user_{$userId}");
 
         // Get monthly stats
         $monthlyStats = $this->dashboardService->getMonthlyStats($userId);

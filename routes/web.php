@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('throttle:10,1');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update')->middleware('throttle:5,1');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('throttle:3,1');
     
     Route::get('transactions/daily-summary', [\App\Http\Controllers\TransactionController::class, 'dailySummary'])->name('transactions.daily-summary');
     Route::get('transactions/weekly-summary', [\App\Http\Controllers\TransactionController::class, 'weeklySummary'])->name('transactions.weekly-summary');

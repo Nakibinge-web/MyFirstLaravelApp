@@ -219,6 +219,38 @@
             }
         }
 
+        // Custom email validation method
+        $.validator.addMethod("validEmail", function(value, element) {
+            // Enhanced email validation regex
+            const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            return this.optional(element) || emailRegex.test(value);
+        }, "Please enter a valid email address (e.g., user@example.com)");
+
+        // Custom method to check for common email typos
+        $.validator.addMethod("emailDomain", function(value, element) {
+            if (!value) return true;
+            
+            const commonDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com'];
+            const typos = {
+                'gmial.com': 'gmail.com',
+                'gmai.com': 'gmail.com',
+                'yahooo.com': 'yahoo.com',
+                'yaho.com': 'yahoo.com',
+                'hotmial.com': 'hotmail.com',
+                'outlok.com': 'outlook.com'
+            };
+            
+            const domain = value.split('@')[1];
+            if (domain && typos[domain]) {
+                $(element).data('suggestion', typos[domain]);
+                return false;
+            }
+            return true;
+        }, function(params, element) {
+            const suggestion = $(element).data('suggestion');
+            return `Did you mean ${$(element).val().split('@')[0]}@${suggestion}?`;
+        });
+
         // jQuery Validation
         $(document).ready(function() {
             // Initialize form validation
@@ -226,7 +258,9 @@
                 rules: {
                     email: {
                         required: true,
-                        email: true
+                        validEmail: true,
+                        emailDomain: true,
+                        maxlength: 255
                     },
                     password: {
                         required: true,
@@ -236,7 +270,7 @@
                 messages: {
                     email: {
                         required: "Please enter your email address",
-                        email: "Please enter a valid email address"
+                        maxlength: "Email address must not exceed 255 characters"
                     },
                     password: {
                         required: "Please enter your password",
@@ -280,13 +314,43 @@
                 $(this).valid();
             });
 
-            // Email format helper
+            // Real-time email validation feedback
             $('#email').on('input', function() {
                 const email = $(this).val();
-                if (email.length > 0 && !email.includes('@')) {
+                const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+                
+                // Remove all border classes first
+                $(this).removeClass('border-yellow-400 border-green-500 border-red-500');
+                
+                if (email.length === 0) {
+                    $(this).addClass('border-gray-200');
+                } else if (!email.includes('@')) {
                     $(this).addClass('border-yellow-400');
+                } else if (emailRegex.test(email)) {
+                    $(this).addClass('border-green-500');
+                    // Add checkmark icon
+                    if (!$(this).parent().find('.email-valid-icon').length) {
+                        $(this).parent().append(`
+                            <div class="email-valid-icon absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        `);
+                    }
                 } else {
-                    $(this).removeClass('border-yellow-400');
+                    $(this).addClass('border-red-500');
+                    $(this).parent().find('.email-valid-icon').remove();
+                }
+            });
+
+            // Remove checkmark when email becomes invalid
+            $('#email').on('blur', function() {
+                const email = $(this).val();
+                const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+                
+                if (!emailRegex.test(email)) {
+                    $(this).parent().find('.email-valid-icon').remove();
                 }
             });
         });
