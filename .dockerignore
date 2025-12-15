@@ -1,0 +1,148 @@
+# =============================================================================
+# .dockerignore - Excludes files from Docker build context
+# =============================================================================
+# This file reduces Docker build context size and improves build performance
+# by excluding unnecessary files from being sent to the Docker daemon.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Git Version Control Files
+# -----------------------------------------------------------------------------
+# Exclude git repository data - not needed in Docker images
+# The .git directory can be large and contains version history
+.git
+.gitignore
+.gitattributes
+
+# -----------------------------------------------------------------------------
+# Environment Configuration Files
+# -----------------------------------------------------------------------------
+# Exclude environment files that may contain sensitive data
+# These should be provided at runtime via docker-compose or secrets
+.env
+.env.*
+!.env.docker.example
+!.env.example
+!.env.production.example
+
+# -----------------------------------------------------------------------------
+# Dependencies (Installed at Build Time)
+# -----------------------------------------------------------------------------
+# Exclude dependency directories - these are installed during docker build
+# node_modules can be very large (100MB+) and vendor can be 50MB+
+node_modules/
+vendor/
+
+# -----------------------------------------------------------------------------
+# Build Artifacts and Generated Files
+# -----------------------------------------------------------------------------
+# Exclude compiled assets and generated files
+# These are created during the build process or at runtime
+public/hot
+public/storage
+public/build
+
+# -----------------------------------------------------------------------------
+# Storage and Cache Directories
+# -----------------------------------------------------------------------------
+# Exclude runtime storage and cache files
+# These directories contain logs, sessions, and cached data that shouldn't be in images
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+bootstrap/cache/*
+.phpunit.result.cache
+
+# -----------------------------------------------------------------------------
+# IDE and Editor Configuration Files
+# -----------------------------------------------------------------------------
+# Exclude IDE-specific files and editor temporary files
+# These are developer-specific and not needed in production images
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# -----------------------------------------------------------------------------
+# Documentation Files
+# -----------------------------------------------------------------------------
+# Exclude most documentation to reduce image size
+# Keep essential README files for reference
+*.md
+!README.md
+!README.docker.md
+
+# -----------------------------------------------------------------------------
+# Test Files and Testing Configuration
+# -----------------------------------------------------------------------------
+# Exclude test files and testing configuration
+# Tests should run in development, not in production images
+tests/
+phpunit.xml
+.phpunit.result.cache
+test-*.ps1
+
+# -----------------------------------------------------------------------------
+# Docker Configuration Files (Avoid Recursion)
+# -----------------------------------------------------------------------------
+# Exclude Docker files to prevent recursive copying
+# These files are used to build the image, not needed inside it
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# -----------------------------------------------------------------------------
+# Project Planning and Specifications
+# -----------------------------------------------------------------------------
+# Exclude project roadmap and specification files
+# These are for development planning, not runtime
+Roadmap/
+.kiro/
+
+# -----------------------------------------------------------------------------
+# Development Tools and Configuration
+# -----------------------------------------------------------------------------
+# Exclude development-specific configuration files
+# These are not needed in production images
+.editorconfig
+.php_cs
+.php_cs.cache
+Makefile
+
+# -----------------------------------------------------------------------------
+# Log Files and Debug Output
+# -----------------------------------------------------------------------------
+# Exclude log files that may exist in the project directory
+npm-debug.log
+yarn-error.log
+*.log
+
+# -----------------------------------------------------------------------------
+# Scripts and Utilities
+# -----------------------------------------------------------------------------
+# Exclude development scripts that aren't needed in images
+scripts/
+run-all-docker-tests.ps1
+test-application-functionality.ps1
+test-development-workflow.ps1
+test-docker-startup.ps1
+test-service-connectivity.ps1
+test-volume-persistence.ps1
+
+# -----------------------------------------------------------------------------
+# Additional Documentation and Summary Files
+# -----------------------------------------------------------------------------
+# Exclude feature documentation and completion summaries
+*_FIX.md
+*_FEATURE.md
+*_ENHANCEMENT.md
+*_OPTIMIZATION.md
+*_SUMMARY.md
+*_COMPLETION.md
+*_RESULTS.md
+DOCKER-TESTING.md

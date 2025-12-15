@@ -10,50 +10,60 @@ class ReportService
 {
     public function getMonthlyReport($userId, $year, $month)
     {
-        $startDate = Carbon::create($year, $month, 1)->startOfMonth();
-        $endDate = $startDate->copy()->endOfMonth();
+        $cacheKey = "monthly_report_{$userId}_{$year}_{$month}";
+        $cacheTTL = config('cache-settings.ttl.reports', 900);
 
-        $income = Transaction::where('user_id', $userId)
-            ->where('type', 'income')
-            ->whereBetween('date', [$startDate, $endDate])
-            ->sum('amount');
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, $cacheTTL, function () use ($userId, $year, $month) {
+            $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+            $endDate = $startDate->copy()->endOfMonth();
 
-        $expenses = Transaction::where('user_id', $userId)
-            ->where('type', 'expense')
-            ->whereBetween('date', [$startDate, $endDate])
-            ->sum('amount');
+            $income = Transaction::where('user_id', $userId)
+                ->where('type', 'income')
+                ->whereBetween('date', [$startDate, $endDate])
+                ->sum('amount');
 
-        $netSavings = $income - $expenses;
-        $savingsRate = $income > 0 ? ($netSavings / $income) * 100 : 0;
+            $expenses = Transaction::where('user_id', $userId)
+                ->where('type', 'expense')
+                ->whereBetween('date', [$startDate, $endDate])
+                ->sum('amount');
 
-        return [
-            'period' => $startDate->format('F Y'),
-            'income' => $income,
-            'expenses' => $expenses,
-            'net_savings' => $netSavings,
-            'savings_rate' => round($savingsRate, 2),
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-        ];
+            $netSavings = $income - $expenses;
+            $savingsRate = $income > 0 ? ($netSavings / $income) * 100 : 0;
+
+            return [
+                'period' => $startDate->format('F Y'),
+                'income' => $income,
+                'expenses' => $expenses,
+                'net_savings' => $netSavings,
+                'savings_rate' => round($savingsRate, 2),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ];
+        });
     }
 
     public function getCategoryBreakdown($userId, $startDate, $endDate, $type = 'expense')
     {
-        return Transaction::where('user_id', $userId)
-            ->where('type', $type)
-            ->whereBetween('date', [$startDate, $endDate])
-            ->select('category_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('category_id')
-            ->with('category')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'category' => $item->category->name,
-                    'color' => $item->category->color,
-                    'icon' => $item->category->icon,
-                    'amount' => $item->total,
-                ];
-            });
+        $cacheKey = "category_breakdown_{$userId}_{$type}_" . $startDate->format('Ymd') . '_' . $endDate->format('Ymd');
+        $cacheTTL = config('cache-settings.ttl.reports', 900);
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, $cacheTTL, function () use ($userId, $startDate, $endDate, $type) {
+            return Transaction::where('user_id', $userId)
+                ->where('type', $type)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->select('category_id', DB::raw('SUM(amount) as total'))
+                ->groupBy('category_id')
+                ->with('category')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'category' => $item->category->name,
+                        'color' => $item->category->color,
+                        'icon' => $item->category->icon,
+                        'amount' => $item->total,
+                    ];
+                });
+        });
     }
 
     public function getIncomeVsExpenseTrend($userId, $months = 6)

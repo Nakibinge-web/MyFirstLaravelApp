@@ -13,6 +13,8 @@ A comprehensive web application for managing personal finances, tracking expense
 - [Technologies Used](#technologies-used)
 - [System Requirements](#system-requirements)
 - [Installation](#installation)
+  - [Traditional Installation](#traditional-installation)
+  - [Docker Installation](#docker-installation-recommended)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
@@ -177,31 +179,98 @@ A comprehensive web application for managing personal finances, tracking expense
 
 ## 📦 Installation
 
-### 1. Clone the Repository
+You can install the application using either Docker (recommended) or traditional installation.
+
+### Docker Installation (Recommended)
+
+Docker provides a consistent development environment with all dependencies pre-configured. No need to install PHP, MySQL, Node.js, or other dependencies on your local machine.
+
+#### Quick Start with Docker
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/yourusername/financial-tracker.git
+   cd financial-tracker
+   ```
+
+2. **Start Docker Environment**
+   ```bash
+   # Copy environment file
+   cp .env.docker.example .env.docker
+   
+   # Build and start containers
+   docker-compose up -d
+   
+   # Install dependencies
+   docker-compose exec php composer install
+   docker-compose exec node npm install
+   
+   # Generate application key
+   docker-compose exec php php artisan key:generate
+   
+   # Run migrations
+   docker-compose exec php php artisan migrate --seed
+   ```
+
+3. **Access the Application**
+   - Application: http://localhost
+   - phpMyAdmin: http://localhost:8080
+   - Vite Dev Server: http://localhost:5173
+
+#### Quick Setup with Makefile
+
+If you have `make` installed:
+```bash
+make setup
+```
+
+This single command handles everything: building containers, installing dependencies, generating keys, and running migrations.
+
+#### Docker Services Included
+
+- **PHP 8.2-FPM** - Laravel application runtime
+- **Nginx** - Web server
+- **MySQL 8.0** - Database
+- **Redis** - Cache and session storage
+- **phpMyAdmin** - Database management interface
+- **Node.js 20** - Asset compilation with Vite HMR
+
+For detailed Docker documentation, troubleshooting, and advanced usage, see:
+- **[README.docker.md](README.docker.md)** - Complete Docker setup guide and troubleshooting
+- **[DOCKER_ARCHITECTURE.md](DOCKER_ARCHITECTURE.md)** - Detailed architecture diagrams and technical documentation
+- **[PERFORMANCE_GUIDE.md](PERFORMANCE_GUIDE.md)** - Performance optimization guide and best practices
+
+---
+
+### Traditional Installation
+
+If you prefer to install dependencies directly on your machine:
+
+#### 1. Clone the Repository
 ```bash
 git clone https://github.com/yourusername/financial-tracker.git
 cd financial-tracker
 ```
 
-### 2. Install PHP Dependencies
+#### 2. Install PHP Dependencies
 ```bash
 composer install
 ```
 
-### 3. Install JavaScript Dependencies
+#### 3. Install JavaScript Dependencies
 ```bash
 npm install
 # or
 yarn install
 ```
 
-### 4. Environment Configuration
+#### 4. Environment Configuration
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-### 5. Configure Database
+#### 5. Configure Database
 Edit `.env` file:
 ```env
 DB_CONNECTION=mysql
@@ -212,17 +281,17 @@ DB_USERNAME=your_username
 DB_PASSWORD=your_password
 ```
 
-### 6. Run Migrations
+#### 6. Run Migrations
 ```bash
 php artisan migrate
 ```
 
-### 7. Seed Database (Optional)
+#### 7. Seed Database (Optional)
 ```bash
 php artisan db:seed
 ```
 
-### 8. Start Development Server
+#### 8. Start Development Server
 ```bash
 php artisan serve
 ```

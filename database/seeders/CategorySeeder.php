@@ -60,8 +60,16 @@ class CategorySeeder extends Seeder
             ['name' => 'Other Income', 'type' => 'income', 'color' => '#A459D1', 'icon' => '💵', 'is_default' => true],
         ];
 
-        foreach ($defaultCategories as $category) {
-            \App\Models\Category::create(array_merge($category, ['user_id' => $userId]));
-        }
+        // Use bulk insert for better performance - single query instead of 12
+        $timestamp = now();
+        $categories = array_map(function($category) use ($userId, $timestamp) {
+            return array_merge($category, [
+                'user_id' => $userId,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ]);
+        }, $defaultCategories);
+
+        \App\Models\Category::insert($categories);
     }
 }
