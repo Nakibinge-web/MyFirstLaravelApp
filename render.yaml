@@ -1,0 +1,68 @@
+# =============================================================================
+# Render Configuration File
+# =============================================================================
+# This file defines the services for deploying to Render.com
+# =============================================================================
+
+services:
+  # Web Service (Laravel Application)
+  - type: web
+    name: personal-financial-tracker
+    env: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: starter # or standard/pro based on needs
+    
+    # Environment Variables
+    envVars:
+      - key: APP_NAME
+        value: Personal Financial Tracker
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true # Render will generate this
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log
+      - key: BCRYPT_ROUNDS
+        value: 12
+    
+    # Health Check
+    healthCheckPath: /health
+    
+    # Auto-deploy on push to main branch
+    autoDeploy: true
+
+  # Database Service (PostgreSQL - Render's managed database)
+  - type: pgsql
+    name: fintrack-db
+    databaseName: financial_tracker
+    user: fintrack_user
+    plan: starter # or standard/pro based on needs
+    
+    # Database will be automatically connected via DATABASE_URL
+
+# =============================================================================
+# Manual Setup Instructions:
+# =============================================================================
+#
+# 1. Push your code to GitHub
+# 2. Connect your GitHub repo to Render
+# 3. Render will automatically detect this render.yaml file
+# 4. Set additional environment variables in Render dashboard:
+#    - APP_URL: https://your-app-name.onrender.com
+#    - Any other custom variables
+#
+# 5. Deploy and monitor logs in Render dashboard
+#
+# =============================================================================
