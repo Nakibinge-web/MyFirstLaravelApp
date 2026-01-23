@@ -37,14 +37,15 @@ FROM node:20-alpine AS node
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files first for better caching
+COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including dev dependencies for build)
+RUN npm install
 
-# Copy source files
-COPY . .
+# Copy source files needed for build
+COPY resources/ ./resources/
+COPY vite.config.js ./
 
 # Build assets
 RUN npm run build
@@ -189,5 +190,4 @@ CMD ["/entrypoint.sh"]
 #    SESSION_DRIVER=file
 #    QUEUE_CONNECTION=sync
 #    MAIL_MAILER=log
-#
 # =============================================================================
