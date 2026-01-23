@@ -1,7 +1,7 @@
 # =============================================================================
-# Personal Financial Tracker - Render Deployment Dockerfile
+# Personal Financial Tracker - Production Dockerfile
 # =============================================================================
-# Optimized Dockerfile for deploying to Render.com
+# Multi-stage Dockerfile for production deployment
 # Includes both PHP-FPM and Nginx in a single container
 # =============================================================================
 
@@ -37,20 +37,21 @@ FROM node:20-alpine AS node
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files first for better caching
+COPY package.json package-lock.json ./
 
-# Install ALL dependencies (including dev dependencies needed for build)
-RUN npm ci
+# Install dependencies (including dev dependencies for build)
+RUN npm install
 
-# Copy source files
-COPY . .
+# Copy source files needed for build
+COPY resources/ ./resources/
+COPY vite.config.js ./
 
 # Build assets
 RUN npm run build
 
 # =============================================================================
-# Stage 3: Production Runtime (Render Optimized)
+# Stage 3: Production Runtime
 # =============================================================================
 FROM php:8.2-fpm-alpine
 
@@ -141,25 +142,15 @@ ENV LOG_CHANNEL=stderr
 ENV SESSION_DRIVER=file
 ENV CACHE_DRIVER=file
 
-# Expose port (Render uses PORT environment variable)
-EXPOSE ${PORT:-80}
+# Expose port 80 (will be dynamically configured by start script)
+EXPOSE 80
 
-# Health check
+# Health check (will be updated by start script for correct port)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-80}/health || exit 1
-
-# Update nginx configuration to use PORT environment variable
-RUN sed -i 's/listen 80;/listen ${PORT:-80};/' /etc/nginx/http.d/default.conf
-
-# Create entrypoint script that handles PORT variable
-RUN echo '#!/bin/sh' > /entrypoint.sh \
-    && echo 'export PORT=${PORT:-80}' >> /entrypoint.sh \
-    && echo 'sed -i "s/listen 80;/listen $PORT;/" /etc/nginx/http.d/default.conf' >> /entrypoint.sh \
-    && echo 'exec /usr/local/bin/start.sh' >> /entrypoint.sh \
-    && chmod +x /entrypoint.sh
+    CMD curl -f http://localhost/health || exit 1
 
 # Start the application
-CMD ["/entrypoint.sh"]
+CMD ["/usr/local/bin/start.sh"]
 
 # =============================================================================
 # Render Deployment Instructions:
