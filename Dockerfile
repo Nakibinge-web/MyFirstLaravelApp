@@ -142,34 +142,33 @@ ENV LOG_CHANNEL=stderr
 ENV SESSION_DRIVER=file
 ENV CACHE_DRIVER=file
 
-# Expose port 80 (will be dynamically configured by start script)
+# Expose port (supports dynamic PORT environment variable)
 EXPOSE 80
 
 # Health check (will be updated by start script for correct port)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+    CMD curl -f http://localhost:${PORT:-80}/health || exit 1
 
 # Start the application
 CMD ["/usr/local/bin/start.sh"]
 
 # =============================================================================
-# Render Deployment Instructions:
+# Deployment Instructions:
 # =============================================================================
 #
-# 1. Build and push to Docker Hub:
-#    docker build -f Dockerfile.render -t yourusername/fintrack:latest .
-#    docker push yourusername/fintrack:latest
+# For Render.com:
+# 1. Connect your repository to Render
+# 2. Create new Web Service with Docker environment
+# 3. Set environment variables:
+#    * APP_KEY=base64:your-app-key
+#    * DATABASE_URL=your-database-url
+#    * APP_URL=https://your-app.onrender.com
 #
-# 2. In Render dashboard:
-#    - Create new Web Service
-#    - Connect your repository
-#    - Set Docker image: yourusername/fintrack:latest
-#    - Set environment variables:
-#      * APP_KEY=base64:your-app-key
-#      * DATABASE_URL=your-database-url
-#      * APP_URL=https://your-app.onrender.com
+# For other platforms:
+# 1. Build: docker build -t fintrack .
+# 2. Run: docker run -p 80:80 fintrack
 #
-# 3. Environment Variables for Render:
+# Environment Variables:
 #    APP_NAME=Personal Financial Tracker
 #    APP_ENV=production
 #    APP_DEBUG=false

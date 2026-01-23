@@ -10,6 +10,16 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Health check endpoint for deployment platforms
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'timestamp' => now()->toISOString(),
+        'app' => config('app.name'),
+        'version' => '1.0.0'
+    ]);
+});
+
 // Guest routes with rate limiting
 Route::middleware(['guest', 'throttle:10,1'])->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
