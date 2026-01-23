@@ -149,18 +149,8 @@ EXPOSE ${PORT:-80}
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:${PORT:-80}/health || exit 1
 
-# Update nginx configuration to use PORT environment variable
-RUN sed -i 's/listen 80;/listen ${PORT:-80};/' /etc/nginx/http.d/default.conf
-
-# Create entrypoint script that handles PORT variable
-RUN echo '#!/bin/sh' > /entrypoint.sh \
-    && echo 'export PORT=${PORT:-80}' >> /entrypoint.sh \
-    && echo 'sed -i "s/listen 80;/listen $PORT;/" /etc/nginx/http.d/default.conf' >> /entrypoint.sh \
-    && echo 'exec /usr/local/bin/start.sh' >> /entrypoint.sh \
-    && chmod +x /entrypoint.sh
-
 # Start the application
-CMD ["/entrypoint.sh"]
+CMD ["/usr/local/bin/start.sh"]
 
 # =============================================================================
 # Render Deployment Instructions:

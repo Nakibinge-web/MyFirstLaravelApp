@@ -10,6 +10,11 @@ set -e
 
 echo "🚀 Starting Personal Financial Tracker..."
 
+# Configure Nginx to use the correct PORT (Render sets this dynamically)
+export PORT=${PORT:-80}
+echo "🔧 Configuring Nginx to listen on port $PORT..."
+sed -i "s/listen 80;/listen $PORT;/" /etc/nginx/http.d/default.conf
+
 # Wait for database to be ready (if DATABASE_URL is set)
 if [ ! -z "$DATABASE_URL" ]; then
     echo "⏳ Waiting for database connection..."
