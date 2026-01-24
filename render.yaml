@@ -35,7 +35,17 @@ services:
       - key: MAIL_MAILER
         value: log
       - key: BCRYPT_ROUNDS
-        value: 12
+        value: 4
+      - key: APP_LOCALE
+        value: en
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_FAKER_LOCALE
+        value: en_US
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: BROADCAST_CONNECTION
+        value: log
     
     # Health Check
     healthCheckPath: /health

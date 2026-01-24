@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -12,12 +13,34 @@ Route::get('/', function () {
 
 // Health check endpoint for deployment platforms
 Route::get('/health', function () {
-    return response()->json([
-        'status' => 'healthy',
-        'timestamp' => now()->toISOString(),
-        'app' => config('app.name'),
-        'version' => '1.0.0'
-    ]);
+    try {
+        // Basic health check
+        $status = [
+            'status' => 'healthy',
+            'timestamp' => now()->toISOString(),
+            'app' => config('app.name', 'Personal Financial Tracker'),
+            'version' => '1.0.0'
+        ];
+
+        // Check database connection if configured
+        if (config('database.default') && env('DATABASE_URL')) {
+            try {
+                DB::connection()->getPdo();
+                $status['database'] = 'connected';
+            } catch (Exception $e) {
+                $status['database'] = 'disconnected';
+                $status['status'] = 'degraded';
+            }
+        }
+
+        return response()->json($status);
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Health check failed',
+            'timestamp' => now()->toISOString()
+        ], 500);
+    }
 });
 
 // Guest routes with rate limiting

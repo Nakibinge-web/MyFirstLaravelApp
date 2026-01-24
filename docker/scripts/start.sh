@@ -29,10 +29,13 @@ if ! nginx -t; then
     exit 1
 fi
 
-# Check if APP_KEY is set
+# Check if APP_KEY is set, if not generate one
 if [ -z "$APP_KEY" ]; then
-    echo "⚠️  WARNING: APP_KEY is not set! This will cause 500 errors."
-    echo "Please set APP_KEY in your environment variables."
+    echo "⚠️  APP_KEY is not set! Generating one..."
+    php artisan key:generate --force --no-interaction
+    echo "✅ APP_KEY generated successfully"
+else
+    echo "✅ APP_KEY is already set"
 fi
 
 # Check critical environment variables
