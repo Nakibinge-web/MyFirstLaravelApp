@@ -102,15 +102,15 @@
         <div class="summary-grid">
             <div class="summary-item">
                 <div class="summary-label">Total Income</div>
-                <div class="summary-value income">${{ number_format($monthlyReport['income'], 2) }}</div>
+                <div class="summary-value income">{{ \App\Helpers\CurrencyHelper::format($monthlyReport['income']) }}</div>
             </div>
             <div class="summary-item">
                 <div class="summary-label">Total Expenses</div>
-                <div class="summary-value expense">${{ number_format($monthlyReport['expenses'], 2) }}</div>
+                <div class="summary-value expense">{{ \App\Helpers\CurrencyHelper::format($monthlyReport['expenses']) }}</div>
             </div>
             <div class="summary-item">
                 <div class="summary-label">Net Savings</div>
-                <div class="summary-value savings">${{ number_format($monthlyReport['net_savings'], 2) }}</div>
+                <div class="summary-value savings">{{ \App\Helpers\CurrencyHelper::format($monthlyReport['net_savings']) }}</div>
             </div>
             <div class="summary-item">
                 <div class="summary-label">Savings Rate</div>
@@ -136,13 +136,13 @@
                 @foreach($expenseBreakdown as $expense)
                 <tr>
                     <td>{{ $expense['icon'] }} {{ $expense['category'] }}</td>
-                    <td class="text-right">${{ number_format($expense['amount'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($expense['amount']) }}</td>
                     <td class="text-right">{{ $totalExpenses > 0 ? number_format(($expense['amount'] / $totalExpenses) * 100, 1) : 0 }}%</td>
                 </tr>
                 @endforeach
                 <tr style="font-weight: bold; background-color: #f9fafb;">
                     <td>Total</td>
-                    <td class="text-right">${{ number_format($totalExpenses, 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($totalExpenses) }}</td>
                     <td class="text-right">100%</td>
                 </tr>
             </tbody>
@@ -167,13 +167,13 @@
                 @foreach($incomeBreakdown as $income)
                 <tr>
                     <td>{{ $income['icon'] }} {{ $income['category'] }}</td>
-                    <td class="text-right">${{ number_format($income['amount'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($income['amount']) }}</td>
                     <td class="text-right">{{ $totalIncome > 0 ? number_format(($income['amount'] / $totalIncome) * 100, 1) : 0 }}%</td>
                 </tr>
                 @endforeach
                 <tr style="font-weight: bold; background-color: #f9fafb;">
                     <td>Total</td>
-                    <td class="text-right">${{ number_format($totalIncome, 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($totalIncome) }}</td>
                     <td class="text-right">100%</td>
                 </tr>
             </tbody>
@@ -198,7 +198,7 @@
                 <tr>
                     <td>{{ $expense['icon'] }} {{ $expense['category'] }}</td>
                     <td class="text-right">{{ $expense['count'] }}</td>
-                    <td class="text-right">${{ number_format($expense['amount'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($expense['amount']) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -225,19 +225,19 @@
                 </tr>
                 <tr>
                     <td>Average Income</td>
-                    <td class="text-right">${{ number_format($stats['avg_income'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($stats['avg_income']) }}</td>
                 </tr>
                 <tr>
                     <td>Average Expense</td>
-                    <td class="text-right">${{ number_format($stats['avg_expense'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($stats['avg_expense']) }}</td>
                 </tr>
                 <tr>
                     <td>Largest Income</td>
-                    <td class="text-right">${{ number_format($stats['largest_income'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($stats['largest_income']) }}</td>
                 </tr>
                 <tr>
                     <td>Largest Expense</td>
-                    <td class="text-right">${{ number_format($stats['largest_expense'], 2) }}</td>
+                    <td class="text-right">{{ \App\Helpers\CurrencyHelper::format($stats['largest_expense']) }}</td>
                 </tr>
             </tbody>
         </table>

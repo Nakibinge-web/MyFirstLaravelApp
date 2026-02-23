@@ -10,8 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebarLinks?.forEach(link => {
         link.addEventListener('click', () => {
             if (window.innerWidth < 1024) {
+                sidebar.classList.remove('open');
                 sidebar.classList.add('-translate-x-full');
                 sidebarOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
             }
         });
     });
@@ -24,11 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.innerWidth >= 1024) {
                 // Desktop: ensure sidebar is visible
                 sidebar?.classList.remove('-translate-x-full');
+                sidebar?.classList.remove('open');
                 sidebarOverlay?.classList.add('hidden');
+                document.body.style.overflow = '';
             } else {
                 // Mobile: ensure sidebar is hidden
+                sidebar?.classList.remove('open');
                 sidebar?.classList.add('-translate-x-full');
                 sidebarOverlay?.classList.add('hidden');
+                document.body.style.overflow = '';
             }
         }, 250);
     });
@@ -37,14 +43,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
             e.preventDefault();
-            const isHidden = sidebar?.classList.contains('-translate-x-full');
+            const isHidden = sidebar?.classList.contains('-translate-x-full') || !sidebar?.classList.contains('open');
             
             if (isHidden) {
+                sidebar?.classList.add('open');
                 sidebar?.classList.remove('-translate-x-full');
                 sidebarOverlay?.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             } else {
+                sidebar?.classList.remove('open');
                 sidebar?.classList.add('-translate-x-full');
                 sidebarOverlay?.classList.add('hidden');
+                document.body.style.overflow = '';
             }
         }
     });

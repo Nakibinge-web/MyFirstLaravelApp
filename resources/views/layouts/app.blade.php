@@ -13,14 +13,14 @@
     @auth
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
             <!-- Sidebar Header -->
             <div class="flex items-center justify-between h-16 px-6 bg-gray-800">
                 <a href="{{ route('dashboard') }}" class="flex items-center space-x-2">
                     <span class="text-2xl">💰</span>
                     <span class="text-lg font-bold">FinTracker</span>
                 </a>
-                <button id="sidebar-close" class="lg:hidden text-gray-400 hover:text-white">
+                <button id="sidebar-close" class="lg:hidden text-gray-400 hover:text-white focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -119,27 +119,27 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top Bar -->
             <header class="bg-white shadow-sm z-10">
-                <div class="flex items-center justify-between h-16 px-6">
+                <div class="flex items-center justify-between h-16 px-4 sm:px-6">
                     <!-- Mobile Menu Button -->
-                    <button id="sidebar-toggle" class="lg:hidden text-gray-500 hover:text-gray-700">
+                    <button id="sidebar-toggle" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
 
                     <!-- Page Title -->
-                    <h1 class="text-xl font-semibold text-gray-800">
+                    <h1 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">
                         @yield('page-title', 'Dashboard')
                     </h1>
 
                     <!-- Top Right Actions -->
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 sm:space-x-4">
                         <!-- Notification Dropdown -->
                         @include('components.notification-dropdown')
                         
                         <!-- Quick Actions -->
-                        <button onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')" class="text-gray-500 hover:text-gray-700" title="Keyboard Shortcuts">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button onclick="document.getElementById('shortcuts-modal').classList.remove('hidden')" class="text-gray-500 hover:text-gray-700 focus:outline-none" title="Keyboard Shortcuts">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </button>
@@ -148,10 +148,10 @@
             </header>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto bg-gray-100 p-6">
+            <main class="flex-1 overflow-y-auto bg-gray-100 p-3 sm:p-4 md:p-6">
                 @if(session('success'))
                 <div class="mb-4">
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded text-sm sm:text-base">
                         {{ session('success') }}
                     </div>
                 </div>
@@ -213,25 +213,61 @@
     @endif
     
     <script>
-        // Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebarClose = document.getElementById('sidebar-close');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        // Sidebar Toggle - wrapped in DOMContentLoaded to ensure elements exist
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarClose = document.getElementById('sidebar-close');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        function openSidebar() {
-            sidebar.classList.remove('-translate-x-full');
-            sidebarOverlay.classList.remove('hidden');
-        }
+            function openSidebar() {
+                if (sidebar && sidebarOverlay) {
+                    sidebar.classList.add('open');
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebarOverlay.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Prevent body scroll when sidebar is open
+                }
+            }
 
-        function closeSidebar() {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        }
+            function closeSidebar() {
+                if (sidebar && sidebarOverlay) {
+                    sidebar.classList.remove('open');
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restore body scroll
+                }
+            }
 
-        sidebarToggle?.addEventListener('click', openSidebar);
-        sidebarClose?.addEventListener('click', closeSidebar);
-        sidebarOverlay?.addEventListener('click', closeSidebar);
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSidebar();
+                });
+            }
+
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeSidebar();
+                });
+            }
+
+            // Close sidebar when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+                    closeSidebar();
+                }
+            });
+        });
 
         // Check for unread notifications
         async function checkNotifications() {

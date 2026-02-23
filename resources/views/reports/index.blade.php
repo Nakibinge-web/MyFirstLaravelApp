@@ -1,17 +1,19 @@
 @extends('layouts.app')
 
+@section('page-title', 'Reports')
+
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Financial Reports</h1>
-        <div class="flex space-x-2">
-            <a href="{{ route('reports.export.pdf', ['year' => $year, 'month' => $month]) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Financial Reports</h1>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="{{ route('reports.export.pdf', ['year' => $year, 'month' => $month]) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-center text-sm sm:text-base">
                 📄 Export PDF
             </a>
-            <a href="{{ route('reports.export.csv', ['year' => $year, 'month' => $month]) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('reports.export.csv', ['year' => $year, 'month' => $month]) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-center text-sm sm:text-base">
                 📊 Export CSV
             </a>
-            <a href="{{ route('reports.yearly') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('reports.yearly') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center text-sm sm:text-base">
                 Yearly Report
             </a>
         </div>
@@ -19,10 +21,10 @@
 
     <!-- Period Selector -->
     <div class="bg-white shadow-md rounded-lg p-4 mb-6">
-        <form method="GET" action="{{ route('reports.index') }}" class="flex items-end space-x-4">
-            <div>
+        <form method="GET" action="{{ route('reports.index') }}" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 sm:gap-4">
+            <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
-                <select name="month" class="border rounded px-3 py-2">
+                <select name="month" class="w-full border rounded px-3 py-2">
                     @for($m = 1; $m <= 12; $m++)
                         <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                             {{ date('F', mktime(0, 0, 0, $m, 1)) }}
@@ -30,9 +32,9 @@
                     @endfor
                 </select>
             </div>
-            <div>
+            <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                <select name="year" class="border rounded px-3 py-2">
+                <select name="year" class="w-full border rounded px-3 py-2">
                     @for($y = date('Y'); $y >= date('Y') - 5; $y--)
                         <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
                     @endfor
@@ -45,117 +47,117 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <p class="text-sm text-gray-600 mb-1">Total Income</p>
-            <p class="text-2xl font-bold text-green-600">${{ number_format($monthlyReport['income'], 2) }}</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <p class="text-xs sm:text-sm text-gray-600 mb-1">Total Income</p>
+            <p class="text-xl sm:text-2xl font-bold text-green-600">{{ \App\Helpers\CurrencyHelper::format($monthlyReport['income']) }}</p>
         </div>
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <p class="text-sm text-gray-600 mb-1">Total Expenses</p>
-            <p class="text-2xl font-bold text-red-600">${{ number_format($monthlyReport['expenses'], 2) }}</p>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <p class="text-xs sm:text-sm text-gray-600 mb-1">Total Expenses</p>
+            <p class="text-xl sm:text-2xl font-bold text-red-600">{{ \App\Helpers\CurrencyHelper::format($monthlyReport['expenses']) }}</p>
         </div>
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <p class="text-sm text-gray-600 mb-1">Net Savings</p>
-            <p class="text-2xl font-bold {{ $monthlyReport['net_savings'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                ${{ number_format($monthlyReport['net_savings'], 2) }}
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <p class="text-xs sm:text-sm text-gray-600 mb-1">Net Savings</p>
+            <p class="text-xl sm:text-2xl font-bold {{ $monthlyReport['net_savings'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                {{ \App\Helpers\CurrencyHelper::format($monthlyReport['net_savings']) }}
             </p>
         </div>
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <p class="text-sm text-gray-600 mb-1">Savings Rate</p>
-            <p class="text-2xl font-bold text-blue-600">{{ $monthlyReport['savings_rate'] }}%</p>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <p class="text-xs sm:text-sm text-gray-600 mb-1">Savings Rate</p>
+            <p class="text-xl sm:text-2xl font-bold text-blue-600">{{ $monthlyReport['savings_rate'] }}%</p>
         </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
         <!-- Expense Breakdown -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">Expense Breakdown</h2>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">Expense Breakdown</h2>
             @if($expenseBreakdown->count() > 0)
-                <div style="height: 300px; position: relative;">
+                <div style="height: 250px; sm:height: 300px; position: relative;">
                     <canvas id="expenseChart"></canvas>
                 </div>
             @else
-                <p class="text-gray-500 text-center py-8">No expense data for this period</p>
+                <p class="text-gray-500 text-center py-8 text-sm sm:text-base">No expense data for this period</p>
             @endif
         </div>
 
         <!-- Income Breakdown -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">Income Breakdown</h2>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">Income Breakdown</h2>
             @if($incomeBreakdown->count() > 0)
-                <div style="height: 300px; position: relative;">
+                <div style="height: 250px; sm:height: 300px; position: relative;">
                     <canvas id="incomeChart"></canvas>
                 </div>
             @else
-                <p class="text-gray-500 text-center py-8">No income data for this period</p>
+                <p class="text-gray-500 text-center py-8 text-sm sm:text-base">No income data for this period</p>
             @endif
         </div>
     </div>
 
     <!-- Income vs Expense Trend -->
-    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Income vs Expense Trend (Last 6 Months)</h2>
-        <div style="height: 250px; position: relative;">
+    <div class="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6">
+        <h2 class="text-lg sm:text-xl font-semibold mb-4">Income vs Expense Trend (Last 6 Months)</h2>
+        <div style="height: 200px; sm:height: 250px; position: relative;">
             <canvas id="trendChart"></canvas>
         </div>
     </div>
 
     <!-- Top Expenses & Stats -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <!-- Top Expense Categories -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">Top Expense Categories</h2>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">Top Expense Categories</h2>
             @if($topExpenses->count() > 0)
                 <div class="space-y-3">
                     @foreach($topExpenses as $expense)
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-2xl">{{ $expense['icon'] }}</span>
-                                <span class="font-medium">{{ $expense['category'] }}</span>
-                                <span class="text-sm text-gray-500">({{ $expense['count'] }} transactions)</span>
+                        <div class="flex justify-between items-center flex-wrap gap-2">
+                            <div class="flex items-center space-x-2 flex-1 min-w-0">
+                                <span class="text-xl sm:text-2xl flex-shrink-0">{{ $expense['icon'] }}</span>
+                                <span class="font-medium text-sm sm:text-base truncate">{{ $expense['category'] }}</span>
+                                <span class="text-xs sm:text-sm text-gray-500 flex-shrink-0">({{ $expense['count'] }})</span>
                             </div>
-                            <span class="font-bold text-red-600">${{ number_format($expense['amount'], 2) }}</span>
+                            <span class="font-bold text-red-600 text-sm sm:text-base flex-shrink-0">{{ \App\Helpers\CurrencyHelper::format($expense['amount']) }}</span>
                         </div>
                     @endforeach
                 </div>
             @else
-                <p class="text-gray-500 text-center py-4">No expenses for this period</p>
+                <p class="text-gray-500 text-center py-4 text-sm sm:text-base">No expenses for this period</p>
             @endif
         </div>
 
         <!-- Transaction Statistics -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">Transaction Statistics</h2>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">Transaction Statistics</h2>
             <div class="space-y-3">
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Total Transactions:</span>
                     <span class="font-semibold">{{ $stats['total_transactions'] }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Income Transactions:</span>
                     <span class="font-semibold text-green-600">{{ $stats['income_transactions'] }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Expense Transactions:</span>
                     <span class="font-semibold text-red-600">{{ $stats['expense_transactions'] }}</span>
                 </div>
                 <hr>
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Average Income:</span>
-                    <span class="font-semibold">${{ number_format($stats['avg_income'], 2) }}</span>
+                    <span class="font-semibold">{{ \App\Helpers\CurrencyHelper::format($stats['avg_income']) }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Average Expense:</span>
-                    <span class="font-semibold">${{ number_format($stats['avg_expense'], 2) }}</span>
+                    <span class="font-semibold">{{ \App\Helpers\CurrencyHelper::format($stats['avg_expense']) }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Largest Income:</span>
-                    <span class="font-semibold text-green-600">${{ number_format($stats['largest_income'], 2) }}</span>
+                    <span class="font-semibold text-green-600">{{ \App\Helpers\CurrencyHelper::format($stats['largest_income']) }}</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between text-sm sm:text-base">
                     <span class="text-gray-600">Largest Expense:</span>
-                    <span class="font-semibold text-red-600">${{ number_format($stats['largest_expense'], 2) }}</span>
+                    <span class="font-semibold text-red-600">{{ \App\Helpers\CurrencyHelper::format($stats['largest_expense']) }}</span>
                 </div>
             </div>
         </div>

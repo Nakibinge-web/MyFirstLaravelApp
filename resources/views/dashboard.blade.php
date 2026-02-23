@@ -2,15 +2,15 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="mb-6 flex justify-between items-center">
+    <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Welcome back, {{ auth()->user()->name }}! 👋</h1>
-            <p class="text-gray-600 mt-1">Here's your financial overview for {{ date('F Y') }}</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, {{ auth()->user()->name }}! 👋</h1>
+            <p class="text-gray-600 mt-1 text-sm sm:text-base">Here's your financial overview for {{ date('F Y') }}</p>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
             <x-currency-selector />
-            <span id="lastUpdated" class="text-sm text-gray-500">Last updated: just now</span>
-            <button id="refreshBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-2">
+            <span id="lastUpdated" class="text-xs sm:text-sm text-gray-500">Last updated: just now</span>
+            <button id="refreshBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-2 w-full sm:w-auto justify-center">
                 <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
@@ -31,95 +31,95 @@
     </div>
 
     <!-- Monthly Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg rounded-lg p-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg rounded-lg p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm">Monthly Income</p>
-                    <p class="text-3xl font-bold mt-1" data-stat="income">{{ currency_format($monthlyStats['income'], null, 0) }}</p>
+                    <p class="text-green-100 text-xs sm:text-sm">Monthly Income</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1" data-stat="income">{{ currency_format($monthlyStats['income'], null, 0) }}</p>
                 </div>
-                <div class="text-5xl opacity-20">💰</div>
+                <div class="text-4xl sm:text-5xl opacity-20">💰</div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg rounded-lg p-6">
+        <div class="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg rounded-lg p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-red-100 text-sm">Monthly Expenses</p>
-                    <p class="text-3xl font-bold mt-1" data-stat="expenses">{{ currency_format($monthlyStats['expenses'], null, 0) }}</p>
+                    <p class="text-red-100 text-xs sm:text-sm">Monthly Expenses</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1" data-stat="expenses">{{ currency_format($monthlyStats['expenses'], null, 0) }}</p>
                 </div>
-                <div class="text-5xl opacity-20">💸</div>
+                <div class="text-4xl sm:text-5xl opacity-20">💸</div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg rounded-lg p-6">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg rounded-lg p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm">Net Savings</p>
-                    <p class="text-3xl font-bold mt-1" data-stat="savings">{{ currency_format($monthlyStats['net_savings'], null, 0) }}</p>
+                    <p class="text-blue-100 text-xs sm:text-sm">Net Savings</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1" data-stat="savings">{{ currency_format($monthlyStats['net_savings'], null, 0) }}</p>
                 </div>
-                <div class="text-5xl opacity-20">💵</div>
+                <div class="text-4xl sm:text-5xl opacity-20">💵</div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg rounded-lg p-6">
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg rounded-lg p-4 sm:p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm">Savings Rate</p>
-                    <p class="text-3xl font-bold mt-1" data-stat="rate">{{ $monthlyStats['savings_rate'] }}%</p>
+                    <p class="text-purple-100 text-xs sm:text-sm">Savings Rate</p>
+                    <p class="text-2xl sm:text-3xl font-bold mt-1" data-stat="rate">{{ $monthlyStats['savings_rate'] }}%</p>
                 </div>
-                <div class="text-5xl opacity-20">📊</div>
+                <div class="text-4xl sm:text-5xl opacity-20">📊</div>
             </div>
         </div>
     </div>
 
     <!-- Net Worth & Quick Stats -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Net Worth</h3>
-            <p class="text-4xl font-bold {{ $netWorth >= 0 ? 'text-green-600' : 'text-red-600' }}" data-stat="networth">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <h3 class="text-base sm:text-lg font-semibold mb-4">Net Worth</h3>
+            <p class="text-3xl sm:text-4xl font-bold {{ $netWorth >= 0 ? 'text-green-600' : 'text-red-600' }}" data-stat="networth">
                 {{ currency_format($netWorth) }}
             </p>
-            <p class="text-sm text-gray-500 mt-2">Total income - Total expenses</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-2">Total income - Total expenses</p>
         </div>
 
-        <div class="bg-white shadow-md rounded-lg p-6 col-span-2">
-            <h3 class="text-lg font-semibold mb-4">Quick Stats</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <span class="text-2xl">📝</span>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6 lg:col-span-2">
+            <h3 class="text-base sm:text-lg font-semibold mb-4">Quick Stats</h3>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="bg-blue-100 p-2 sm:p-3 rounded-lg">
+                        <span class="text-xl sm:text-2xl">📝</span>
                     </div>
                     <div>
-                        <p class="text-2xl font-bold" data-stat="transactions">{{ $quickStats['total_transactions'] }}</p>
-                        <p class="text-sm text-gray-600">Transactions</p>
+                        <p class="text-xl sm:text-2xl font-bold" data-stat="transactions">{{ $quickStats['total_transactions'] }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600">Transactions</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <span class="text-2xl">💼</span>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="bg-green-100 p-2 sm:p-3 rounded-lg">
+                        <span class="text-xl sm:text-2xl">💼</span>
                     </div>
                     <div>
-                        <p class="text-2xl font-bold" data-stat="budgets">{{ $quickStats['total_budgets'] }}</p>
-                        <p class="text-sm text-gray-600">Budgets</p>
+                        <p class="text-xl sm:text-2xl font-bold" data-stat="budgets">{{ $quickStats['total_budgets'] }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600">Budgets</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div class="bg-purple-100 p-3 rounded-lg">
-                        <span class="text-2xl">🎯</span>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="bg-purple-100 p-2 sm:p-3 rounded-lg">
+                        <span class="text-xl sm:text-2xl">🎯</span>
                     </div>
                     <div>
-                        <p class="text-2xl font-bold" data-stat="active-goals">{{ $quickStats['active_goals'] }}</p>
-                        <p class="text-sm text-gray-600">Active Goals</p>
+                        <p class="text-xl sm:text-2xl font-bold" data-stat="active-goals">{{ $quickStats['active_goals'] }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600">Active Goals</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div class="bg-yellow-100 p-3 rounded-lg">
-                        <span class="text-2xl">⭐</span>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="bg-yellow-100 p-2 sm:p-3 rounded-lg">
+                        <span class="text-xl sm:text-2xl">⭐</span>
                     </div>
                     <div>
-                        <p class="text-2xl font-bold" data-stat="total-goals">{{ $quickStats['total_goals'] }}</p>
-                        <p class="text-sm text-gray-600">Total Goals</p>
+                        <p class="text-xl sm:text-2xl font-bold" data-stat="total-goals">{{ $quickStats['total_goals'] }}</p>
+                        <p class="text-xs sm:text-sm text-gray-600">Total Goals</p>
                     </div>
                 </div>
             </div>
@@ -127,12 +127,12 @@
     </div>
 
     <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <!-- Recent Transactions -->
-        <div class="lg:col-span-2 bg-white shadow-md rounded-lg p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Recent Transactions</h2>
-                <a href="{{ route('transactions.index') }}" class="group inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+        <div class="lg:col-span-2 bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold">Recent Transactions</h2>
+                <a href="{{ route('transactions.index') }}" class="group inline-flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                     <span>View All</span>
                     <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
@@ -143,30 +143,30 @@
                 <div class="space-y-3" id="recentTransactions">
                     @foreach($recentTransactions as $transaction)
                         <div class="flex justify-between items-center py-2 border-b last:border-0">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-2xl">{{ $transaction->category->icon }}</span>
-                                <div>
-                                    <p class="font-medium">{{ $transaction->category->name }}</p>
-                                    <p class="text-sm text-gray-500">{{ $transaction->date->format('M d, Y') }}</p>
+                            <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                                <span class="text-xl sm:text-2xl flex-shrink-0">{{ $transaction->category->icon }}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-medium text-sm sm:text-base truncate">{{ $transaction->category->name }}</p>
+                                    <p class="text-xs sm:text-sm text-gray-500">{{ $transaction->date->format('M d, Y') }}</p>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <p class="font-semibold {{ $transaction->type == 'income' ? 'text-green-600' : 'text-red-600' }}">
+                            <div class="text-right flex-shrink-0 ml-2">
+                                <p class="font-semibold text-sm sm:text-base {{ $transaction->type == 'income' ? 'text-green-600' : 'text-red-600' }}">
                                     {{ $transaction->type == 'income' ? '+' : '-' }}{{ currency_format($transaction->amount) }}
                                 </p>
-                                <p class="text-xs text-gray-500">{{ Str::limit($transaction->description, 20) }}</p>
+                                <p class="text-xs text-gray-500 hidden sm:block">{{ Str::limit($transaction->description, 20) }}</p>
                             </div>
                         </div>
                     @endforeach
                 </div>
             @else
-                <p class="text-gray-500 text-center py-8">No transactions yet. <a href="{{ route('transactions.create') }}" class="text-blue-500">Add one</a></p>
+                <p class="text-gray-500 text-center py-8 text-sm sm:text-base">No transactions yet. <a href="{{ route('transactions.create') }}" class="text-blue-500">Add one</a></p>
             @endif
         </div>
 
         <!-- Spending Trend -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">7-Day Spending</h2>
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <h2 class="text-lg sm:text-xl font-semibold mb-4">7-Day Spending</h2>
             <div style="height: 200px; position: relative;">
                 <canvas id="spendingChart"></canvas>
             </div>
@@ -174,12 +174,12 @@
     </div>
 
     <!-- Budgets & Goals -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <!-- Active Budgets -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Budget Status</h2>
-                <a href="{{ route('budgets.index') }}" class="group inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold">Budget Status</h2>
+                <a href="{{ route('budgets.index') }}" class="group inline-flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                     <span>View All</span>
                     <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
@@ -190,9 +190,9 @@
                 <div class="space-y-4" id="budgetsContainer">
                     @foreach($budgetsWithUtilization->take(3) as $budget)
                         <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="font-medium">{{ $budget->category->icon }} {{ $budget->category->name }}</span>
-                                <span class="text-gray-600">{{ currency_format($budget->utilization['spent'], null, 0) }} / {{ currency_format($budget->amount, null, 0) }}</span>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1">
+                                <span class="font-medium truncate mr-2">{{ $budget->category->icon }} {{ $budget->category->name }}</span>
+                                <span class="text-gray-600 flex-shrink-0">{{ currency_format($budget->utilization['spent'], null, 0) }} / {{ currency_format($budget->amount, null, 0) }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="h-2 rounded-full transition-all
@@ -208,15 +208,15 @@
                     @endforeach
                 </div>
             @else
-                <p class="text-gray-500 text-center py-8">No active budgets. <a href="{{ route('budgets.create') }}" class="text-blue-500">Create one</a></p>
+                <p class="text-gray-500 text-center py-8 text-sm sm:text-base">No active budgets. <a href="{{ route('budgets.create') }}" class="text-blue-500">Create one</a></p>
             @endif
         </div>
 
         <!-- Active Goals -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Active Goals</h2>
-                <a href="{{ route('goals.index') }}" class="group inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+        <div class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold">Active Goals</h2>
+                <a href="{{ route('goals.index') }}" class="group inline-flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                     <span>View All</span>
                     <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
@@ -227,9 +227,9 @@
                 <div class="space-y-4" id="goalsContainer">
                     @foreach($goalsWithProgress->take(3) as $goal)
                         <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="font-medium">{{ $goal->name }}</span>
-                                <span class="text-gray-600">{{ currency_format($goal->current_amount, null, 0) }} / {{ currency_format($goal->target_amount, null, 0) }}</span>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1">
+                                <span class="font-medium truncate mr-2">{{ $goal->name }}</span>
+                                <span class="text-gray-600 flex-shrink-0">{{ currency_format($goal->current_amount, null, 0) }} / {{ currency_format($goal->target_amount, null, 0) }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="bg-blue-500 h-2 rounded-full transition-all"
@@ -241,7 +241,7 @@
                     @endforeach
                 </div>
             @else
-                <p class="text-gray-500 text-center py-8">No active goals. <a href="{{ route('goals.create') }}" class="text-blue-500">Create one</a></p>
+                <p class="text-gray-500 text-center py-8 text-sm sm:text-base">No active goals. <a href="{{ route('goals.create') }}" class="text-blue-500">Create one</a></p>
             @endif
         </div>
     </div>

@@ -37,12 +37,9 @@
 
         <!-- Footer -->
         <div class="px-4 py-3 border-t border-gray-200 text-center">
-            <form action="{{ route('notifications.read-all') }}" method="POST" class="inline">
-                @csrf
-                <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                    Mark All as Read
-                </button>
-            </form>
+            <button onclick="markAllNotificationsRead()" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                Mark All as Read
+            </button>
         </div>
     </div>
 </div>
@@ -115,16 +112,81 @@
     
     async function markNotificationRead(id) {
         try {
-            await fetch(`/notifications/${id}/read`, {
+            const response = await fetch(`/notifications/${id}/read`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             });
-            loadNotificationDropdown();
+            
+            if (response.ok) {
+                // Reload the dropdown to update the list and badge
+                loadNotificationDropdown();
+                
+                // Update the unread count on the notifications page if it exists
+                const unreadCountElement = document.getElementById('unreadCount');
+                if (unreadCountElement) {
+                    let currentCount = parseInt(unreadCountElement.textContent);
+                    currentCount = Math.max(0, currentCount - 1);
+                    unreadCountElement.textContent = currentCount;
+                    
+                    const unreadPlural = document.getElementById('unreadPlural');
+                    if (unreadPlural) {
+                        unreadPlural.textContent = currentCount > 1 ? 's' : '';
+                    }
+                    
+                    const unreadCountBanner = document.getElementById('unreadCountBanner');
+                    if (currentCount === 0 && unreadCountBanner) {
+                        unreadCountBanner.style.display = 'none';
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error);
+        }
+    }
+    
+    async function markAllNotificationsRead() {
+        try {
+            const response = await fetch('/notifications/read-all', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                // Reload the dropdown to update the list and badge
+                loadNotificationDropdown();
+                
+                // Update the notifications page if it exists
+                const unreadCountBanner = document.getElementById('unreadCountBanner');
+                if (unreadCountBanner) {
+                    unreadCountBanner.style.display = 'none';
+                }
+                
+                // Update all notification items on the page
+                const notificationElements = document.querySelectorAll('.notification-item');
+                notificationElements.forEach(element => {
+                    element.classList.add('opacity-75');
+                    
+                    const newBadge = element.querySelector('.new-badge');
+                    if (newBadge) {
+                        newBadge.remove();
+                    }
+                    
+                    const markReadBtn = element.querySelector('.mark-read-btn');
+                    if (markReadBtn) {
+                        markReadBtn.remove();
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
         }
     }
     

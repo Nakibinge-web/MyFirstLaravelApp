@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ReportService;
+use App\Helpers\CurrencyHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -56,6 +57,9 @@ class ReportController extends Controller
             $monthlyReport['end_date']
         );
 
+        // Get user's currency for formatting
+        $userCurrency = CurrencyHelper::current();
+
         return view('reports.index', compact(
             'monthlyReport',
             'expenseBreakdown',
@@ -64,7 +68,8 @@ class ReportController extends Controller
             'topExpenses',
             'stats',
             'year',
-            'month'
+            'month',
+            'userCurrency'
         ));
     }
 
@@ -98,12 +103,16 @@ class ReportController extends Controller
             10
         );
 
+        // Get user's currency for formatting
+        $userCurrency = CurrencyHelper::current();
+
         return view('reports.yearly', compact(
             'yearlyReport',
             'expenseBreakdown',
             'incomeBreakdown',
             'topExpenses',
-            'year'
+            'year',
+            'userCurrency'
         ));
     }
 
@@ -141,12 +150,16 @@ class ReportController extends Controller
             $monthlyReport['end_date']
         );
 
+        // Get user's currency for formatting
+        $userCurrency = CurrencyHelper::current();
+
         $pdf = \PDF::loadView('reports.pdf', compact(
             'monthlyReport',
             'expenseBreakdown',
             'incomeBreakdown',
             'topExpenses',
-            'stats'
+            'stats',
+            'userCurrency'
         ));
 
         return $pdf->download('financial-report-' . $monthlyReport['period'] . '.pdf');
@@ -186,7 +199,7 @@ class ReportController extends Controller
                     $transaction->category->name,
                     ucfirst($transaction->type),
                     $transaction->description,
-                    number_format($transaction->amount, 2),
+                    CurrencyHelper::format($transaction->amount),
                 ]);
             }
 

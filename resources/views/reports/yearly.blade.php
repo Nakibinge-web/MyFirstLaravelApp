@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('page-title', 'Reports')
+
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-6">
@@ -30,16 +32,16 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white shadow-md rounded-lg p-6">
             <p class="text-sm text-gray-600 mb-1">Total Income</p>
-            <p class="text-2xl font-bold text-green-600">${{ number_format($yearlyReport['income'], 2) }}</p>
+            <p class="text-2xl font-bold text-green-600">{{ \App\Helpers\CurrencyHelper::format($yearlyReport['income']) }}</p>
         </div>
         <div class="bg-white shadow-md rounded-lg p-6">
             <p class="text-sm text-gray-600 mb-1">Total Expenses</p>
-            <p class="text-2xl font-bold text-red-600">${{ number_format($yearlyReport['expenses'], 2) }}</p>
+            <p class="text-2xl font-bold text-red-600">{{ \App\Helpers\CurrencyHelper::format($yearlyReport['expenses']) }}</p>
         </div>
         <div class="bg-white shadow-md rounded-lg p-6">
             <p class="text-sm text-gray-600 mb-1">Net Savings</p>
             <p class="text-2xl font-bold {{ $yearlyReport['net_savings'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                ${{ number_format($yearlyReport['net_savings'], 2) }}
+                {{ \App\Helpers\CurrencyHelper::format($yearlyReport['net_savings']) }}
             </p>
         </div>
         <div class="bg-white shadow-md rounded-lg p-6">
@@ -87,7 +89,7 @@
                             <span class="font-medium">{{ $expense['category'] }}</span>
                             <span class="text-sm text-gray-500">({{ $expense['count'] }} transactions)</span>
                         </div>
-                        <span class="font-bold text-red-600">${{ number_format($expense['amount'], 2) }}</span>
+                        <span class="font-bold text-red-600">{{ \App\Helpers\CurrencyHelper::format($expense['amount']) }}</span>
                     </div>
                 @endforeach
             </div>
