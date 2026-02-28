@@ -24,7 +24,7 @@ class BudgetRequest extends FormRequest
         return [
             'category_id' => ['required', 'exists:categories,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'period' => ['required', 'in:weekly,monthly,yearly'],
+            'period' => ['required', 'in:daily,weekly,monthly,yearly'],
             'start_date' => ['required', 'date'],
         ];
     }

@@ -39,7 +39,9 @@ class BudgetController extends Controller
         $data = $request->validated();
         $data['user_id'] = auth()->id();
 
-        if ($data['period'] === 'weekly') {
+        if ($data['period'] === 'daily') {
+            $this->budgetService->createDailyBudget($data);
+        } elseif ($data['period'] === 'weekly') {
             $this->budgetService->createWeeklyBudget($data);
         } elseif ($data['period'] === 'monthly') {
             $this->budgetService->createMonthlyBudget($data);
@@ -64,7 +66,10 @@ class BudgetController extends Controller
         $data = $request->validated();
         
         // Recalculate dates based on period
-        if ($data['period'] === 'weekly') {
+        if ($data['period'] === 'daily') {
+            $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfDay();
+            $endDate = $startDate->copy()->endOfDay();
+        } elseif ($data['period'] === 'weekly') {
             $startDate = \Carbon\Carbon::parse($data['start_date'])->startOfDay();
             $endDate = $startDate->copy()->addDays(6)->endOfDay();
         } elseif ($data['period'] === 'monthly') {

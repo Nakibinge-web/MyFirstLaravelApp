@@ -55,6 +55,7 @@
                 </label>
                 <select name="period" id="period" class="shadow border rounded w-full py-2 px-3 text-gray-700 @error('period') border-red-500 @enderror" required>
                     <option value="">Select Period</option>
+                    <option value="daily" {{ old('period', $budget->period) == 'daily' ? 'selected' : '' }}>Daily</option>
                     <option value="weekly" {{ old('period', $budget->period) == 'weekly' ? 'selected' : '' }}>Weekly</option>
                     <option value="monthly" {{ old('period', $budget->period) == 'monthly' ? 'selected' : '' }}>Monthly</option>
                     <option value="yearly" {{ old('period', $budget->period) == 'yearly' ? 'selected' : '' }}>Yearly</option>
@@ -71,7 +72,7 @@
                 <input type="date" name="start_date" id="start_date" value="{{ old('start_date', $budget->start_date->format('Y-m-d')) }}" 
                        class="shadow border rounded w-full py-2 px-3 text-gray-700 @error('start_date') border-red-500 @enderror" 
                        required>
-                <p class="text-gray-600 text-xs mt-1">The budget will automatically cover the full week, month, or year from this date</p>
+                <p class="text-gray-600 text-xs mt-1">The budget will automatically cover the full day, week, month, or year from this date</p>
                 @error('start_date')
                     <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror

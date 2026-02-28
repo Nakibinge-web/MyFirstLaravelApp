@@ -10,15 +10,23 @@ class BudgetFactory extends Factory
 {
     public function definition(): array
     {
-        $startDate = now()->startOfMonth();
+        $period = fake()->randomElement(['daily', 'weekly', 'monthly', 'yearly']);
+        $startDate = now()->startOfDay();
+        
+        $endDate = match($period) {
+            'daily' => $startDate->copy()->endOfDay(),
+            'weekly' => $startDate->copy()->addDays(6)->endOfDay(),
+            'monthly' => $startDate->copy()->addDays(29)->endOfDay(),
+            'yearly' => $startDate->copy()->addDays(364)->endOfDay(),
+        };
         
         return [
             'user_id' => User::factory(),
             'category_id' => Category::factory(),
             'amount' => fake()->randomFloat(2, 100, 5000),
-            'period' => 'monthly',
+            'period' => $period,
             'start_date' => $startDate,
-            'end_date' => $startDate->copy()->endOfMonth(),
+            'end_date' => $endDate,
         ];
     }
 }

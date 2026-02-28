@@ -78,6 +78,23 @@ class BudgetService
         ]);
     }
 
+    public function createDailyBudget(array $data): Budget
+    {
+        // Start from the selected date (or today if not provided)
+        $startDate = Carbon::parse($data['start_date'] ?? now())->startOfDay();
+        // End date is the same day
+        $endDate = $startDate->copy()->endOfDay();
+
+        return Budget::create([
+            'user_id' => $data['user_id'],
+            'category_id' => $data['category_id'],
+            'amount' => $data['amount'],
+            'period' => 'daily',
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]);
+    }
+
     public function createWeeklyBudget(array $data): Budget
     {
         // Start from the selected date (or today if not provided)
