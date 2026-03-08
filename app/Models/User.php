@@ -22,6 +22,9 @@ class User extends Authenticatable
         'email',
         'password',
         'currency',
+        'is_admin',
+        'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -44,6 +47,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -70,5 +76,37 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(\App\Models\Notification::class);
+    }
+
+    /**
+     * Check if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
+
+    /**
+     * Check if the user account is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active;
+    }
+
+    /**
+     * Activate the user account.
+     */
+    public function activate(): void
+    {
+        $this->update(['is_active' => true]);
+    }
+
+    /**
+     * Deactivate the user account.
+     */
+    public function deactivate(): void
+    {
+        $this->update(['is_active' => false]);
     }
 }
