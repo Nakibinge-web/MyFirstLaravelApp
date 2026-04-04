@@ -18,6 +18,7 @@ class NotificationService
             'message' => $message,
             'icon' => $icon,
             'color' => $color,
+            'is_read' => false,
         ]);
     }
 

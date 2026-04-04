@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -92,3 +95,34 @@ Route::middleware('auth')->group(function () {
         return view('demo.features');
     })->name('demo.features');
 });
+
+// Admin routes - require auth + admin middleware, rate-limited to 60 req/min
+RateLimiter::for('admin', function (Request $request) {
+    return \Illuminate\Cache\RateLimiting\Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+});
+
+Route::middleware(['auth', 'admin', 'throttle:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // Dashboard
+        Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+
+        // User management
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/{userId}', [AdminController::class, 'userShow'])->name('users.show');
+        Route::post('/users/{userId}/toggle-status', [AdminController::class, 'userToggleStatus'])->name('users.toggle-status');
+
+        // Activity logs
+        Route::get('/activity-logs', [AdminController::class, 'activityLogs'])->name('activity-logs');
+
+        // Backups
+        Route::get('/backups', [AdminController::class, 'backups'])->name('backups');
+        Route::post('/backups', [AdminController::class, 'createBackup'])->name('backups.create');
+        Route::get('/backups/{backupId}/download', [AdminController::class, 'downloadBackup'])->name('backups.download');
+        Route::delete('/backups/{backupId}', [AdminController::class, 'deleteBackup'])->name('backups.delete');
+
+        // System settings
+        Route::get('/settings', [AdminController::class, 'systemSettings'])->name('settings');
+        Route::post('/settings', [AdminController::class, 'updateSystemSettings'])->name('settings.update');
+    });

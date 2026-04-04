@@ -10,6 +10,7 @@ A comprehensive web application for managing personal finances, tracking expense
 ## 📋 Table of Contents
 
 - [Features](#features)
+- [Admin Panel](#admin-panel)
 - [Technologies Used](#technologies-used)
 - [System Requirements](#system-requirements)
 - [Installation](#installation)
@@ -77,6 +78,80 @@ A comprehensive web application for managing personal finances, tracking expense
 - Dark mode sidebar
 - Interactive charts and graphs
 - Keyboard shortcuts
+
+## 🔐 Admin Panel
+
+The application includes a full-featured admin panel accessible only to users with administrator privileges.
+
+### Accessing the Admin Panel
+
+The admin panel is available at `/admin/dashboard`. A link to it appears automatically in the sidebar navigation for users with admin access.
+
+### Creating the First Admin User
+
+**Option 1: Using Tinker**
+```bash
+php artisan tinker
+```
+```php
+$user = App\Models\User::where('email', 'your@email.com')->first();
+$user->update(['is_admin' => true]);
+```
+
+**Option 2: Using the AdminUserSeeder**
+```bash
+php artisan db:seed --class=AdminUserSeeder
+```
+
+**Option 3: Directly in the database**
+```sql
+UPDATE users SET is_admin = 1 WHERE email = 'your@email.com';
+```
+
+### Admin Panel Features
+
+#### Dashboard
+- Total and active user counts
+- Total transactions and transaction volume
+- Income, expenses, and net financial summary
+- Recent activity log (last 10 entries)
+- System health metrics (database size, backup count, last backup time)
+
+#### User Management (`/admin/users`)
+- Paginated list of all users (25 per page)
+- View detailed user profile and statistics
+- Activate or deactivate user accounts
+- Promote users to admin or revoke admin privileges
+- View per-user transaction, budget, and goal statistics
+
+#### Activity Logs (`/admin/activity-logs`)
+- Full audit trail of all critical system actions
+- Filter by user, action type, date range, or keyword search
+- Paginated results (50 per page), ordered newest first
+- Logged actions include: `user_login`, `user_activated`, `user_deactivated`, `admin_promoted`, `admin_revoked`, `backup_created`, `backup_failed`, `backup_downloaded`
+
+#### Database Backups (`/admin/backups`)
+- Create on-demand SQLite database backups
+- Download or delete existing backups
+- Automatic retention of the last 10 completed backups
+- Backup files stored securely outside the public directory (`storage/app/backups/`)
+
+#### System Settings (`/admin/settings`)
+- View and update application-wide configuration values
+- Supports string, integer, boolean, and JSON setting types
+- All changes are logged in the activity log
+
+### Security Considerations
+
+- **Access control**: The `IsAdmin` middleware enforces `is_admin = true` on every admin route, returning 403 for non-admins.
+- **CSRF protection**: All admin forms include `@csrf` tokens.
+- **Rate limiting**: Admin routes are limited to 60 requests per minute.
+- **Session security**: Session cookies use `httpOnly` and `secure` flags (configured in `config/session.php`).
+- **Input validation**: All filter parameters and form inputs are validated before processing.
+- **Backup security**: Backup files are stored in `storage/app/backups/` (not publicly accessible) and excluded from version control via `.gitignore`.
+- **Audit trail**: All administrative actions are recorded in the activity log with IP address, user agent, and relevant metadata.
+- **Inactive users**: Users with `is_active = false` cannot log in, even if they have valid credentials.
+- **Automatic cleanup**: Activity logs older than 90 days are deleted automatically via a scheduled job.
 
 ## 🛠️ Technologies Used
 
