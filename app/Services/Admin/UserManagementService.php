@@ -139,13 +139,15 @@ class UserManagementService
     {
         $user = User::findOrFail($userId);
 
-        // Cascade-delete related records before removing the user
-        $user->transactions()->delete();
-        $user->budgets()->delete();
-        $user->goals()->delete();
-        $user->categories()->delete();
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($user) {
+            \Illuminate\Support\Facades\DB::table('notifications')->where('user_id', $user->id)->delete();
+            \Illuminate\Support\Facades\DB::table('budgets')->where('user_id', $user->id)->delete();
+            \Illuminate\Support\Facades\DB::table('transactions')->where('user_id', $user->id)->delete();
+            \Illuminate\Support\Facades\DB::table('goals')->where('user_id', $user->id)->delete();
+            \Illuminate\Support\Facades\DB::table('categories')->where('user_id', $user->id)->delete();
 
-        return $user->delete();
+            return (bool) \Illuminate\Support\Facades\DB::table('users')->where('id', $user->id)->delete();
+        });
     }
 
     /**

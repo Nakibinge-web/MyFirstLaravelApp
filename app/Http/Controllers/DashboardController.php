@@ -77,6 +77,16 @@ class DashboardController extends Controller
     public function refresh()
     {
         $userId = auth()->id();
+        $user = auth()->user();
+
+        // If client requested a specific currency, update the user profile
+        if (request()->has('currency')) {
+            $reqCurrency = strtoupper(trim((string) request('currency')));
+            if (preg_match('/^[A-Z]{3}$/', $reqCurrency) && $user && $user->currency !== $reqCurrency) {
+                $user->currency = $reqCurrency;
+                $user->save();
+            }
+        }
         
         // Clear cache for this user
         Cache::forget("dashboard_data_user_{$userId}");
@@ -110,7 +120,11 @@ class DashboardController extends Controller
         // Get spending trend
         $spendingTrend = $this->dashboardService->getSpendingTrend($userId, 7);
 
+        $activeCurrency = $user->currency ?? request('currency') ?? 'USD';
+
         return response()->json([
+            'currency' => $activeCurrency,
+            'currency_symbol' => currency_symbol($activeCurrency),
             'monthlyStats' => $monthlyStats,
             'recentTransactions' => $recentTransactions->map(function ($t) {
                 return [
@@ -153,14 +167,19 @@ class DashboardController extends Controller
             'currency' => 'required|string|size:3',
         ]);
 
-        auth()->user()->update([
-            'currency' => strtoupper($validated['currency']),
-        ]);
+        $user = auth()->user();
+        $currency = strtoupper($validated['currency']);
+        $user->currency = $currency;
+        $user->save();
+
+        // Invalidate cached dashboard data so fresh calculations use the new currency
+        Cache::forget("dashboard_data_user_{$user->id}");
 
         return response()->json([
             'success' => true,
             'message' => 'Currency updated successfully',
-            'currency' => auth()->user()->currency,
+            'currency' => $user->currency,
+            'currency_symbol' => currency_symbol($user->currency),
         ]);
     }
 }

@@ -11,15 +11,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed in order to maintain referential integrity
-        $this->call([
+        $seeders = [
             UserSeeder::class,
             CategorySeeder::class,
-            TransactionSeeder::class,
-            BudgetSeeder::class,
-            GoalSeeder::class,
-            NotificationSeeder::class,
-        ]);
+        ];
+
+        foreach ([
+            'Database\Seeders\TransactionSeeder',
+            'Database\Seeders\BudgetSeeder',
+            'Database\Seeders\GoalSeeder',
+            'Database\Seeders\NotificationSeeder',
+        ] as $class) {
+            if (class_exists($class)) {
+                $seeders[] = $class;
+            }
+        }
+
+        // Seed in order to maintain referential integrity
+        $this->call($seeders);
 
         $this->command->info('✅ Database seeded successfully with demo data!');
     }

@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Production Docker Compose configuration
 # This configuration is optimized for production deployment with:
 # - Resource limits
@@ -14,6 +12,8 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
+      args:
+        PHP_VERSION: "8.5.12"
     container_name: fintrack_php_prod
     restart: always
     working_dir: /var/www/html

@@ -26,7 +26,7 @@ Route::get('/health', function () {
         ];
 
         // Check database connection if configured
-        if (config('database.default') && env('DATABASE_URL')) {
+        if (config('database.default')) {
             try {
                 DB::connection()->getPdo();
                 $status['database'] = 'connected';
@@ -58,7 +58,6 @@ Route::middleware(['guest', 'throttle:10,1'])->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    Route::get('/logout', [LoginController::class, 'logout'])->name('logout.get');
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
@@ -73,6 +72,7 @@ Route::middleware('auth')->group(function () {
     Route::get('transactions/weekly-summary', [\App\Http\Controllers\TransactionController::class, 'weeklySummary'])->name('transactions.weekly-summary');
     Route::resource('transactions', \App\Http\Controllers\TransactionController::class);
     Route::resource('categories', \App\Http\Controllers\CategoryController::class)->except(['show']);
+    Route::resource('notes', \App\Http\Controllers\NoteController::class);
     Route::resource('budgets', \App\Http\Controllers\BudgetController::class)->except(['show']);
     Route::resource('goals', \App\Http\Controllers\GoalController::class);
     Route::post('goals/{goal}/progress', [\App\Http\Controllers\GoalController::class, 'updateProgress'])->name('goals.progress');

@@ -42,7 +42,7 @@ class BudgetService
         $utilization = $this->calculateUtilization($budget);
         
         if ($utilization['status'] === 'exceeded') {
-            return "Budget exceeded for {$budget->category->name}! You've spent \${$utilization['spent']} of \${$budget->amount}.";
+            return "Budget exceeded for {$budget->category->name}! You've spent " . currency_format((float) $utilization['spent']) . " of " . currency_format((float) $budget->amount) . ".";
         } elseif ($utilization['status'] === 'warning') {
             return "Budget warning for {$budget->category->name}! You've used {$utilization['percentage']}% of your budget.";
         }

@@ -70,34 +70,25 @@ class ToastNotification {
 
     async checkForNew() {
         try {
-            const response = await fetch('/notifications/unread');
-            const data = await response.json();
-            
+            const data = await window.fetchUnreadNotifications();
+            if (!data) {
+                return;
+            }
+
             // If there are new notifications since last check
             if (data.count > this.lastNotificationCount && this.lastNotificationCount > 0) {
                 // Show only the new notifications
                 const newCount = data.count - this.lastNotificationCount;
                 const newNotifications = data.notifications.slice(0, newCount);
-                
+
                 newNotifications.forEach((notification, index) => {
                     setTimeout(() => {
                         this.show(notification);
                     }, index * 300); // Stagger the notifications
                 });
             }
-            
+
             this.lastNotificationCount = data.count;
-            
-            // Update badge
-            const badge = document.getElementById('sidebarNotificationBadge');
-            if (badge) {
-                if (data.count > 0) {
-                    badge.textContent = data.count > 9 ? '9+' : data.count;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
         } catch (error) {
             console.error('Error checking notifications:', error);
         }
@@ -106,7 +97,7 @@ class ToastNotification {
     startPolling(interval = 60000) { // Default: check every minute
         // Initial check
         this.checkForNew();
-        
+
         // Poll for new notifications
         setInterval(() => {
             this.checkForNew();
@@ -114,17 +105,65 @@ class ToastNotification {
     }
 }
 
+let unreadNotificationsPromise = null;
+let lastUnreadNotificationsAt = 0;
+let lastUnreadNotificationsData = null;
+
+function updateSidebarNotificationBadge(count) {
+    const badge = document.getElementById('sidebarNotificationBadge');
+    if (!badge) {
+        return;
+    }
+
+    if (count > 0) {
+        badge.textContent = count > 9 ? '9+' : count;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+window.fetchUnreadNotifications = function (force = false) {
+    const now = Date.now();
+    if (!force && lastUnreadNotificationsData && now - lastUnreadNotificationsAt < 2000) {
+        return Promise.resolve(lastUnreadNotificationsData);
+    }
+
+    if (unreadNotificationsPromise) {
+        return unreadNotificationsPromise;
+    }
+
+    unreadNotificationsPromise = fetch('/notifications/unread')
+        .then((response) => response.json())
+        .then((data) => {
+            lastUnreadNotificationsData = data;
+            lastUnreadNotificationsAt = Date.now();
+            updateSidebarNotificationBadge(data.count);
+            document.dispatchEvent(new CustomEvent('notifications:updated', { detail: data }));
+            return data;
+        })
+        .catch((error) => {
+            console.error('Error checking notifications:', error);
+            return null;
+        })
+        .finally(() => {
+            unreadNotificationsPromise = null;
+        });
+
+    return unreadNotificationsPromise;
+};
+
 // Initialize toast notifications when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     if (document.body.classList.contains('authenticated') || document.querySelector('#sidebar')) {
-        const toastNotification = new ToastNotification();
-        toastNotification.startPolling(60000); // Check every minute
+        window.toastNotification = new ToastNotification();
+        window.toastNotification.startPolling(60000); // Check every minute
     }
 });
 
 // Manual notification trigger function (can be called from anywhere)
 function showNotification(title, message, type = 'info', icon = null) {
-    const toast = new ToastNotification();
+    const toast = window.toastNotification || new ToastNotification();
     toast.show({
         title: title,
         message: message,

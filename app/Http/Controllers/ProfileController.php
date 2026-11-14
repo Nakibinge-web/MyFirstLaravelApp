@@ -56,11 +56,14 @@ class ProfileController extends Controller
                 
                 // 4. Delete goals (no dependencies on other tables)
                 DB::table('goals')->where('user_id', $user->id)->delete();
+
+                // 5. Delete notes (no dependencies on other tables)
+                DB::table('notes')->where('user_id', $user->id)->delete();
                 
-                // 5. Delete categories (now safe since transactions and budgets are gone)
+                // 6. Delete categories (now safe since transactions and budgets are gone)
                 DB::table('categories')->where('user_id', $user->id)->delete();
                 
-                // 6. Finally, delete the user account from the users table
+                // 7. Finally, delete the user account from the users table
                 DB::table('users')->where('id', $user->id)->delete();
             });
             

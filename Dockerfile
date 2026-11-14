@@ -33,7 +33,8 @@ RUN composer dump-autoload --optimize --classmap-authoritative
 # =============================================================================
 # Stage 2: Node.js Build
 # =============================================================================
-FROM node:20-alpine AS node
+ARG NODE_VERSION=24.22.1
+FROM node:${NODE_VERSION}-alpine AS node
 
 WORKDIR /app
 
@@ -53,7 +54,8 @@ RUN npm run build
 # =============================================================================
 # Stage 3: Production Runtime
 # =============================================================================
-FROM php:8.2-fpm-alpine
+ARG PHP_VERSION=8.5.12
+FROM php:${PHP_VERSION}-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \

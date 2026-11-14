@@ -150,7 +150,7 @@ The Docker environment includes the following services:
 ### 1. PHP-FPM (php)
 
 - **Container Name:** fintrack_php
-- **Base Image:** php:8.2-fpm-alpine
+- **Base Image:** php:8.5.12-fpm-alpine
 - **Purpose:** Runs the Laravel application
 - **Exposed Ports:** None (internal only, port 9000)
 - **PHP Extensions:** PDO, MySQL, Mbstring, Exif, PCNTL, BCMath, GD, Zip
@@ -197,7 +197,7 @@ The Docker environment includes the following services:
 ### 6. Node.js (node)
 
 - **Container Name:** fintrack_node
-- **Base Image:** node:20-alpine
+- **Base Image:** node:24.22.1-alpine
 - **Purpose:** Asset compilation and Vite dev server
 - **Exposed Ports:** 5173 → http://localhost:5173
 - **Features:** Hot Module Replacement (HMR) for frontend development

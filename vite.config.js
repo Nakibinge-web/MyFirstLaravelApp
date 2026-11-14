@@ -18,6 +18,18 @@ export default defineConfig({
         },
         watch: {
             usePolling: true,
+            interval: 2000,
+            binaryInterval: 5000,
+            ignored: [
+                '**/vendor/**',
+                '**/node_modules/**',
+                '**/storage/**',
+                '**/bootstrap/cache/**',
+                '**/.git/**',
+                '**/tests/**',
+                '**/docker/**',
+                '**/public/**',
+            ],
         },
     },
 });

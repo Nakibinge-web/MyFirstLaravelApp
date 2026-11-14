@@ -58,7 +58,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500">Transaction Volume</p>
-                <p class="text-3xl font-bold text-gray-800 mt-1">${{ number_format($metrics['transactions']['volume'], 2) }}</p>
+                <p class="text-3xl font-bold text-gray-800 mt-1">{{ currency_format((float) $metrics['transactions']['volume']) }}</p>
                 <p class="text-xs text-gray-400 mt-1">All time total</p>
             </div>
             <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -75,20 +75,20 @@
     {{-- Total Income --}}
     <div class="bg-white rounded-lg shadow p-5 border-l-4 border-green-500">
         <p class="text-sm text-gray-500">Total Income</p>
-        <p class="text-2xl font-bold text-green-600 mt-1">${{ number_format($metrics['financial']['total_income'], 2) }}</p>
+        <p class="text-2xl font-bold text-green-600 mt-1">{{ currency_format((float) $metrics['financial']['total_income']) }}</p>
     </div>
 
     {{-- Total Expenses --}}
     <div class="bg-white rounded-lg shadow p-5 border-l-4 border-red-500">
         <p class="text-sm text-gray-500">Total Expenses</p>
-        <p class="text-2xl font-bold text-red-600 mt-1">${{ number_format($metrics['financial']['total_expenses'], 2) }}</p>
+        <p class="text-2xl font-bold text-red-600 mt-1">{{ currency_format((float) $metrics['financial']['total_expenses']) }}</p>
     </div>
 
     {{-- Net Amount --}}
     <div class="bg-white rounded-lg shadow p-5 border-l-4 {{ $metrics['financial']['net'] >= 0 ? 'border-blue-500' : 'border-orange-500' }}">
         <p class="text-sm text-gray-500">Net Amount</p>
         <p class="text-2xl font-bold {{ $metrics['financial']['net'] >= 0 ? 'text-blue-600' : 'text-orange-600' }} mt-1">
-            ${{ number_format(abs($metrics['financial']['net']), 2) }}
+            {{ currency_format((float) abs($metrics['financial']['net'])) }}
             <span class="text-sm font-normal">{{ $metrics['financial']['net'] >= 0 ? 'surplus' : 'deficit' }}</span>
         </p>
     </div>

@@ -249,27 +249,73 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+(function() {
     let spendingChart;
-    const currencySymbol = '{{ currency_symbol() }}';
-    const currencyCode = '{{ auth()->user()->currency ?? 'USD' }}';
-    
-    // Currencies that have symbol after amount
+
+    const currencySymbols = {
+        'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'CNY': '¥',
+        'INR': '₹', 'CAD': 'C$', 'AUD': 'A$', 'CHF': 'CHF', 'SEK': 'kr',
+        'NZD': 'NZ$', 'KRW': '₩', 'SGD': 'S$', 'HKD': 'HK$', 'NOK': 'kr',
+        'MXN': 'MX$', 'BRL': 'R$', 'ZAR': 'R', 'RUB': '₽', 'TRY': '₺',
+        'AED': 'د.إ', 'SAR': 'ر.س', 'THB': '฿', 'IDR': 'Rp', 'MYR': 'RM',
+        'PHP': '₱', 'PLN': 'zł', 'DKK': 'kr', 'CZK': 'Kč', 'HUF': 'Ft',
+        'UGX': 'UGX'
+    };
+
     const symbolAfterCurrencies = ['EUR', 'SEK', 'NOK', 'DKK', 'CZK', 'HUF', 'PLN'];
-    const symbolAfter = symbolAfterCurrencies.includes(currencyCode);
+    const storageKey = 'fintrack_currency_user_{{ auth()->id() ?? 'guest' }}';
+    const serverCurrency = '{{ strtoupper(auth()->user()->currency ?? 'USD') }}';
+
+    let initialSaved = null;
+    try {
+        initialSaved = localStorage.getItem(storageKey);
+    } catch (e) {}
+
+    let currencyCode = (initialSaved && currencySymbols[initialSaved]) ? initialSaved : serverCurrency;
+    let currencySymbol = currencySymbols[currencyCode] || '{{ currency_symbol() }}';
+    let symbolAfter = symbolAfterCurrencies.includes(currencyCode);
+    window.currentAppCurrency = currencyCode;
+
+    // Global helper to update current currency state across the dashboard
+    window.setAppCurrency = function(code, symbol) {
+        if (!code || typeof code !== 'string') return;
+        const normalized = code.trim().toUpperCase();
+        if (!normalized) return;
+
+        currencyCode = normalized;
+        currencySymbol = symbol || currencySymbols[currencyCode] || currencyCode;
+        symbolAfter = symbolAfterCurrencies.includes(currencyCode);
+        window.currentAppCurrency = currencyCode;
+
+        const userCurrencyMeta = document.querySelector('meta[name="user-currency"]');
+        if (userCurrencyMeta) {
+            userCurrencyMeta.content = currencyCode;
+        }
+
+        try {
+            localStorage.setItem(storageKey, currencyCode);
+        } catch (e) {}
+
+        const select = document.getElementById('currency-select');
+        if (select && select.value !== currencyCode) {
+            select.value = currencyCode;
+        }
+    };
 
     // Initialize Spending Trend Chart
     function initSpendingChart(data) {
         const ctx = document.getElementById('spendingChart');
+        if (!ctx) return;
         if (spendingChart) {
             spendingChart.destroy();
         }
         spendingChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: data.map(d => d.date),
+                labels: (data || []).map(d => d.date),
                 datasets: [{
                     label: 'Daily Spending',
-                    data: data.map(d => d.amount),
+                    data: (data || []).map(d => d.amount),
                     backgroundColor: 'rgba(239, 68, 68, 0.5)',
                     borderColor: '#EF4444',
                     borderWidth: 1
@@ -287,7 +333,8 @@
                                 if (symbolAfter) {
                                     return value.toLocaleString() + ' ' + currencySymbol;
                                 }
-                                return currencySymbol + value.toLocaleString();
+                                const spacing = (currencySymbol && currencySymbol.length > 1) ? ' ' : '';
+                                return currencySymbol + spacing + value.toLocaleString();
                             }
                         }
                     }
@@ -300,7 +347,8 @@
                                 if (symbolAfter) {
                                     return value.toLocaleString() + ' ' + currencySymbol;
                                 }
-                                return currencySymbol + value.toLocaleString();
+                                const spacing = (currencySymbol && currencySymbol.length > 1) ? ' ' : '';
+                                return currencySymbol + spacing + value.toLocaleString();
                             }
                         }
                     }
@@ -312,73 +360,143 @@
     // Initialize chart on page load
     initSpendingChart({!! json_encode($spendingTrend) !!});
 
-    // Format currency
-    function formatCurrency(amount) {
-        const formatted = parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    // Format dashboard currency (scoped inside IIFE to prevent collision with app.js)
+    function formatDashboardCurrency(amount) {
+        const num = parseFloat(amount || 0);
+        const formatted = num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         if (symbolAfter) {
             return formatted + ' ' + currencySymbol;
         }
-        return currencySymbol + formatted;
+        const spacing = (currencySymbol && currencySymbol.length > 1) ? ' ' : '';
+        return currencySymbol + spacing + formatted;
     }
 
-    // Format currency with decimals
-    function formatCurrencyDecimals(amount) {
-        const formatted = parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // Format dashboard currency with decimals
+    function formatDashboardCurrencyDecimals(amount) {
+        const num = parseFloat(amount || 0);
+        const formatted = num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         if (symbolAfter) {
             return formatted + ' ' + currencySymbol;
         }
-        return currencySymbol + formatted;
+        const spacing = (currencySymbol && currencySymbol.length > 1) ? ' ' : '';
+        return currencySymbol + spacing + formatted;
     }
 
     // Refresh dashboard data
-    async function refreshDashboard() {
+    window.refreshDashboard = refreshDashboard;
+
+    async function refreshDashboard(overrideCurrency) {
         const refreshBtn = document.getElementById('refreshBtn');
         const refreshIcon = document.getElementById('refreshIcon');
         const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Ignore DOM Event / non-currency arguments passed by click listeners or timers
+        const validOverride = (typeof overrideCurrency === 'string' && /^[a-zA-Z]{3}$/.test(overrideCurrency.trim()))
+            ? overrideCurrency.trim().toUpperCase()
+            : null;
+
+        // Determine currently chosen currency - strictly preserve user choice
+        const select = document.getElementById('currency-select');
+        let storedCurrency = null;
+        try {
+            storedCurrency = localStorage.getItem(storageKey);
+        } catch (e) {}
+
+        const activeCurrency = (
+            validOverride ||
+            (select && select.value ? select.value : null) ||
+            storedCurrency ||
+            currencyCode ||
+            serverCurrency ||
+            'USD'
+        ).toUpperCase();
         
+        // Immediately enforce the chosen currency locally
+        window.setAppCurrency(activeCurrency, currencySymbols[activeCurrency]);
+
         // Show loading state
-        refreshBtn.disabled = true;
-        refreshIcon.classList.add('animate-spin');
-        loadingOverlay.classList.remove('hidden');
+        if (refreshBtn) refreshBtn.disabled = true;
+        if (refreshIcon) refreshIcon.classList.add('animate-spin');
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
 
         try {
-            const response = await fetch('{{ route('dashboard.refresh') }}');
+            const refreshUrl = '{{ route('dashboard.refresh', [], false) }}' + '?currency=' + encodeURIComponent(activeCurrency);
+            const response = await fetch(refreshUrl, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!response.ok || !contentType.includes('application/json')) {
+                throw new Error('Failed to refresh dashboard data');
+            }
+
             const data = await response.json();
 
-            // Update monthly stats
-            document.querySelector('[data-stat="income"]').textContent = formatCurrency(data.monthlyStats.income);
-            document.querySelector('[data-stat="expenses"]').textContent = formatCurrency(data.monthlyStats.expenses);
-            document.querySelector('[data-stat="savings"]').textContent = formatCurrency(data.monthlyStats.net_savings);
-            document.querySelector('[data-stat="rate"]').textContent = data.monthlyStats.savings_rate + '%';
+            // Maintain the active user-chosen currency
+            const currentSelected = validOverride || (select && select.value ? select.value : null) || activeCurrency;
+            window.setAppCurrency(currentSelected, currencySymbols[currentSelected]);
+
+            // Update monthly stats cards
+            const incomeEl = document.querySelector('[data-stat="income"]');
+            if (incomeEl && data.monthlyStats) {
+                incomeEl.textContent = formatDashboardCurrency(data.monthlyStats.income);
+            }
+
+            const expensesEl = document.querySelector('[data-stat="expenses"]');
+            if (expensesEl && data.monthlyStats) {
+                expensesEl.textContent = formatDashboardCurrency(data.monthlyStats.expenses);
+            }
+
+            const savingsEl = document.querySelector('[data-stat="savings"]');
+            if (savingsEl && data.monthlyStats) {
+                savingsEl.textContent = formatDashboardCurrency(data.monthlyStats.net_savings);
+            }
+
+            const rateEl = document.querySelector('[data-stat="rate"]');
+            if (rateEl && data.monthlyStats) {
+                rateEl.textContent = data.monthlyStats.savings_rate + '%';
+            }
 
             // Update net worth
             const netWorthEl = document.querySelector('[data-stat="networth"]');
-            netWorthEl.textContent = formatCurrencyDecimals(data.netWorth);
-            netWorthEl.className = data.netWorth >= 0 ? 'text-4xl font-bold text-green-600' : 'text-4xl font-bold text-red-600';
+            if (netWorthEl && typeof data.netWorth !== 'undefined') {
+                netWorthEl.textContent = formatDashboardCurrencyDecimals(data.netWorth);
+                netWorthEl.className = data.netWorth >= 0
+                    ? 'text-3xl sm:text-4xl font-bold text-green-600'
+                    : 'text-3xl sm:text-4xl font-bold text-red-600';
+            }
 
             // Update quick stats
-            document.querySelector('[data-stat="transactions"]').textContent = data.quickStats.total_transactions;
-            document.querySelector('[data-stat="budgets"]').textContent = data.quickStats.total_budgets;
-            document.querySelector('[data-stat="active-goals"]').textContent = data.quickStats.active_goals;
-            document.querySelector('[data-stat="total-goals"]').textContent = data.quickStats.total_goals;
+            if (data.quickStats) {
+                const txEl = document.querySelector('[data-stat="transactions"]');
+                if (txEl) txEl.textContent = data.quickStats.total_transactions;
+                const bEl = document.querySelector('[data-stat="budgets"]');
+                if (bEl) bEl.textContent = data.quickStats.total_budgets;
+                const agEl = document.querySelector('[data-stat="active-goals"]');
+                if (agEl) agEl.textContent = data.quickStats.active_goals;
+                const tgEl = document.querySelector('[data-stat="total-goals"]');
+                if (tgEl) tgEl.textContent = data.quickStats.total_goals;
+            }
 
             // Update recent transactions
             const transactionsContainer = document.getElementById('recentTransactions');
-            if (data.recentTransactions.length > 0) {
+            if (transactionsContainer && data.recentTransactions && data.recentTransactions.length > 0) {
                 transactionsContainer.innerHTML = data.recentTransactions.map(t => `
                     <div class="flex justify-between items-center py-2 border-b last:border-0">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-2xl">${t.category_icon}</span>
-                            <div>
-                                <p class="font-medium">${t.category_name}</p>
-                                <p class="text-sm text-gray-500">${t.date}</p>
+                        <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                            <span class="text-xl sm:text-2xl flex-shrink-0">${t.category_icon || '📝'}</span>
+                            <div class="min-w-0 flex-1">
+                                <p class="font-medium text-sm sm:text-base truncate">${t.category_name || ''}</p>
+                                <p class="text-xs sm:text-sm text-gray-500">${t.date || ''}</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                                ${t.type === 'income' ? '+' : '-'}${formatCurrencyDecimals(t.amount)}
+                        <div class="text-right flex-shrink-0 ml-2">
+                            <p class="font-semibold text-sm sm:text-base ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                ${t.type === 'income' ? '+' : '-'}${formatDashboardCurrencyDecimals(t.amount)}
                             </p>
-                            <p class="text-xs text-gray-500">${t.description.substring(0, 20)}${t.description.length > 20 ? '...' : ''}</p>
+                            <p class="text-xs text-gray-500 hidden sm:block">${(t.description || '').substring(0, 20)}${(t.description || '').length > 20 ? '...' : ''}</p>
                         </div>
                     </div>
                 `).join('');
@@ -386,15 +504,15 @@
 
             // Update budgets
             const budgetsContainer = document.getElementById('budgetsContainer');
-            if (data.budgets.length > 0) {
+            if (budgetsContainer && data.budgets && data.budgets.length > 0) {
                 budgetsContainer.innerHTML = data.budgets.map(b => {
                     const statusClass = b.utilization.status === 'exceeded' ? 'bg-red-500' : 
                                        b.utilization.status === 'warning' ? 'bg-yellow-500' : 'bg-green-500';
                     return `
                         <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="font-medium">${b.category_icon} ${b.category_name}</span>
-                                <span class="text-gray-600">${formatCurrency(b.utilization.spent)} / ${formatCurrency(b.amount)}</span>
+                            <div class="flex justify-between text-xs sm:text-sm mb-1">
+                                <span class="font-medium truncate mr-2">${b.category_icon || '💼'} ${b.category_name || ''}</span>
+                                <span class="text-gray-600 flex-shrink-0">${formatDashboardCurrency(b.utilization.spent)} / ${formatDashboardCurrency(b.amount)}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="h-2 rounded-full transition-all ${statusClass}" style="width: ${Math.min(b.utilization.percentage, 100)}%"></div>
@@ -407,12 +525,12 @@
 
             // Update goals
             const goalsContainer = document.getElementById('goalsContainer');
-            if (data.goals.length > 0) {
+            if (goalsContainer && data.goals && data.goals.length > 0) {
                 goalsContainer.innerHTML = data.goals.map(g => `
                     <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">${g.name}</span>
-                            <span class="text-gray-600">${formatCurrency(g.current_amount)} / ${formatCurrency(g.target_amount)}</span>
+                        <div class="flex justify-between text-xs sm:text-sm mb-1">
+                            <span class="font-medium truncate mr-2">${g.name || ''}</span>
+                            <span class="text-gray-600 flex-shrink-0">${formatDashboardCurrency(g.current_amount)} / ${formatDashboardCurrency(g.target_amount)}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
                             <div class="bg-blue-500 h-2 rounded-full transition-all" style="width: ${Math.min(g.progress.percentage, 100)}%"></div>
@@ -423,27 +541,38 @@
             }
 
             // Update spending chart
-            initSpendingChart(data.spendingTrend);
+            if (data.spendingTrend) {
+                initSpendingChart(data.spendingTrend);
+            }
 
             // Update last updated time
-            document.getElementById('lastUpdated').textContent = 'Last updated: just now';
+            const lastUpdatedEl = document.getElementById('lastUpdated');
+            if (lastUpdatedEl) {
+                lastUpdatedEl.textContent = 'Last updated: just now';
+            }
 
             // Show success message
-            showNotification('Dashboard refreshed successfully!', 'success');
+            showDashboardNotification('Dashboard refreshed successfully!', 'success');
 
         } catch (error) {
             console.error('Error refreshing dashboard:', error);
-            showNotification('Failed to refresh dashboard', 'error');
+            showDashboardNotification('Failed to refresh dashboard', 'error');
         } finally {
             // Hide loading state
-            refreshBtn.disabled = false;
-            refreshIcon.classList.remove('animate-spin');
-            loadingOverlay.classList.add('hidden');
+            if (refreshBtn) refreshBtn.disabled = false;
+            if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
         }
     }
 
-    // Show notification
-    function showNotification(message, type) {
+    // On page load, if localStorage had a different currency from initial SSR, sync cards immediately
+    if (initialSaved && initialSaved !== serverCurrency) {
+        window.setAppCurrency(initialSaved, currencySymbols[initialSaved]);
+        window.refreshDashboard(initialSaved);
+    }
+
+    // Show notification (scoped inside IIFE to avoid collision with notifications.js)
+    function showDashboardNotification(message, type) {
         const notification = document.createElement('div');
         notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
             type === 'success' ? 'bg-green-500' : 'bg-red-500'
@@ -457,24 +586,33 @@
     }
 
     // Attach refresh button event
-    document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
+    const refreshBtnEl = document.getElementById('refreshBtn');
+    if (refreshBtnEl) {
+        refreshBtnEl.addEventListener('click', function() {
+            refreshDashboard();
+        });
+    }
 
     // Auto-refresh every 5 minutes
-    setInterval(refreshDashboard, 5 * 60 * 1000);
+    setInterval(function() {
+        refreshDashboard();
+    }, 5 * 60 * 1000);
 
     // Update "last updated" time every minute
-    setInterval(() => {
+    setInterval(function() {
         const lastUpdatedEl = document.getElementById('lastUpdated');
+        if (!lastUpdatedEl) return;
         const currentText = lastUpdatedEl.textContent;
         if (currentText.includes('just now')) {
             lastUpdatedEl.textContent = 'Last updated: 1 minute ago';
         } else {
             const match = currentText.match(/(\d+) minute/);
             if (match) {
-                const minutes = parseInt(match[1]) + 1;
+                const minutes = parseInt(match[1], 10) + 1;
                 lastUpdatedEl.textContent = `Last updated: ${minutes} minute${minutes > 1 ? 's' : ''} ago`;
             }
         }
     }, 60 * 1000);
+})();
 </script>
 @endsection

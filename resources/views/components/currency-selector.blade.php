@@ -42,50 +42,89 @@
 </div>
 
 <script>
-document.getElementById('currency-select').addEventListener('change', async function(e) {
-    const currency = e.target.value;
-    const select = e.target;
-    
-    // Show loading state
-    select.disabled = true;
-    select.style.opacity = '0.6';
-    
+(function() {
+    const select = document.getElementById('currency-select');
+    if (!select) return;
+
+    const storageKey = 'fintrack_currency_user_{{ auth()->id() ?? 'guest' }}';
+    const serverCurrency = '{{ strtoupper(auth()->user()->currency ?? 'USD') }}';
+
+    // Check per-user localStorage preference on mount
+    let savedCurrency = null;
     try {
-        const response = await fetch('{{ route('dashboard.currency') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ currency: currency })
-        });
+        savedCurrency = localStorage.getItem(storageKey);
+    } catch (e) {}
+
+    if (savedCurrency && Array.from(select.options).some(o => o.value === savedCurrency)) {
+        select.value = savedCurrency;
+    } else if (serverCurrency && Array.from(select.options).some(o => o.value === serverCurrency)) {
+        select.value = serverCurrency;
+    }
+
+    window.currentAppCurrency = select.value;
+
+    select.addEventListener('change', async function(e) {
+        const currency = e.target.value.toUpperCase();
         
-        const data = await response.json();
+        // Save per-user preference in localStorage immediately
+        try {
+            localStorage.setItem(storageKey, currency);
+        } catch (err) {}
+
+        window.currentAppCurrency = currency;
+        const userCurrencyMeta = document.querySelector('meta[name="user-currency"]');
+        if (userCurrencyMeta) {
+            userCurrencyMeta.content = currency;
+        }
+
+        // Update active currency in client state immediately
+        if (window.setAppCurrency) {
+            window.setAppCurrency(currency);
+        }
+
+        // Show loading state on select
+        select.disabled = true;
+        select.style.opacity = '0.6';
         
-        if (data.success) {
-            // Show success message
+        try {
+            const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+            const currencyUrl = '{{ route('dashboard.currency', [], false) }}';
+            const response = await fetch(currencyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': tokenMeta ? tokenMeta.content : '',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ currency: currency })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.currency && window.setAppCurrency) {
+                    window.setAppCurrency(data.currency, data.currency_symbol);
+                }
+            }
+
+            // Refresh the dashboard cards with the newly selected currency
+            if (window.refreshDashboard) {
+                await window.refreshDashboard(currency);
+            }
+
+            // Show success notification if Toast is available
             if (window.Toast) {
                 window.Toast.success('Currency updated to ' + currency);
             }
-            
-            // Reload page to update all currency displays
-            setTimeout(() => {
-                window.location.reload();
-            }, 500);
-        } else {
-            throw new Error(data.message || 'Failed to update currency');
+        } catch (error) {
+            console.error('Error updating currency on server:', error);
+            // Even if network call had an issue, keep the user-chosen currency in the UI and localStorage
+            if (window.refreshDashboard) {
+                window.refreshDashboard(currency);
+            }
+        } finally {
+            select.disabled = false;
+            select.style.opacity = '1';
         }
-    } catch (error) {
-        console.error('Error updating currency:', error);
-        if (window.Toast) {
-            window.Toast.error('Failed to update currency');
-        }
-        // Revert selection
-        select.value = '{{ auth()->user()->currency }}';
-    } finally {
-        select.disabled = false;
-        select.style.opacity = '1';
-    }
-});
+    });
+})();
 </script>

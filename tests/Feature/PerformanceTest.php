@@ -95,13 +95,14 @@ class PerformanceTest extends TestCase
             $category = \App\Models\Category::factory()->create(['user_id' => $user->id]);
         }
 
-        $response = $this->post(route('transactions.store'), [
-            'amount' => 100,
-            'type' => 'expense',
-            'category_id' => $category->id,
-            'date' => now()->format('Y-m-d'),
-            'description' => 'Test transaction',
-        ]);
+        $response = $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class)
+            ->post(route('transactions.store'), [
+                'amount' => 100,
+                'type' => 'expense',
+                'category_id' => $category->id,
+                'date' => now()->format('Y-m-d'),
+                'description' => 'Test transaction',
+            ]);
 
         // Transaction was created successfully (redirect or 200)
         $this->assertContains($response->getStatusCode(), [200, 201, 302]);

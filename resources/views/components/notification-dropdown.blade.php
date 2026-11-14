@@ -45,66 +45,84 @@
 </div>
 
 <script>
-    // Load notifications into dropdown
-    async function loadNotificationDropdown() {
-        try {
-            const response = await fetch('{{ route('notifications.unread') }}');
-            const data = await response.json();
-            
-            const list = document.getElementById('notificationDropdownList');
-            const headerBadge = document.getElementById('headerNotificationBadge');
-            
-            // Update badge
+    function renderNotificationDropdown(data) {
+        if (!data) {
+            return;
+        }
+
+        const list = document.getElementById('notificationDropdownList');
+        const headerBadge = document.getElementById('headerNotificationBadge');
+
+        // Update badge
+        if (headerBadge) {
             if (data.count > 0) {
                 headerBadge.textContent = data.count > 9 ? '9+' : data.count;
                 headerBadge.classList.remove('hidden');
             } else {
                 headerBadge.classList.add('hidden');
             }
-            
-            // Update list
-            if (data.notifications.length > 0) {
-                list.innerHTML = data.notifications.map(n => {
-                    let icon = '🔔';
-                    let bgColor = 'bg-blue-50';
-                    
-                    if (n.type === 'budget_alert' && n.title.includes('Exceeded')) {
-                        icon = '⚠️';
-                        bgColor = 'bg-red-50';
-                    } else if (n.type === 'budget_alert' && n.title.includes('Warning')) {
-                        icon = '⚡';
-                        bgColor = 'bg-yellow-50';
-                    } else if (n.type === 'goal_achieved') {
-                        icon = '🎉';
-                        bgColor = 'bg-green-50';
-                    } else if (n.type === 'goal_reminder') {
-                        icon = '⏰';
-                        bgColor = 'bg-blue-50';
-                    }
-                    
-                    return `
-                        <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 cursor-pointer ${bgColor}" onclick="markNotificationRead(${n.id})">
-                            <div class="flex items-start space-x-3">
-                                <div class="text-xl">${n.icon || icon}</div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate">${n.title}</p>
-                                    <p class="text-xs text-gray-600 line-clamp-2">${n.message}</p>
-                                    <p class="text-xs text-gray-500 mt-1">${n.created_at}</p>
-                                </div>
+        }
+
+        if (!list) {
+            return;
+        }
+
+        // Update list
+        if (data.notifications.length > 0) {
+            list.innerHTML = data.notifications.map(n => {
+                let icon = '🔔';
+                let bgColor = 'bg-blue-50';
+
+                if (n.type === 'budget_alert' && n.title.includes('Exceeded')) {
+                    icon = '⚠️';
+                    bgColor = 'bg-red-50';
+                } else if (n.type === 'budget_alert' && n.title.includes('Warning')) {
+                    icon = '⚡';
+                    bgColor = 'bg-yellow-50';
+                } else if (n.type === 'goal_achieved') {
+                    icon = '🎉';
+                    bgColor = 'bg-green-50';
+                } else if (n.type === 'goal_reminder') {
+                    icon = '⏰';
+                    bgColor = 'bg-blue-50';
+                }
+
+                return `
+                    <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 cursor-pointer ${bgColor}" onclick="markNotificationRead(${n.id})">
+                        <div class="flex items-start space-x-3">
+                            <div class="text-xl">${n.icon || icon}</div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">${n.title}</p>
+                                <p class="text-xs text-gray-600 line-clamp-2">${n.message}</p>
+                                <p class="text-xs text-gray-500 mt-1">${n.created_at}</p>
                             </div>
                         </div>
-                    `;
-                }).join('');
-            } else {
-                list.innerHTML = `
-                    <div class="px-4 py-8 text-center text-gray-500">
-                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                        </svg>
-                        <p class="text-sm">No new notifications</p>
                     </div>
                 `;
+            }).join('');
+        } else {
+            list.innerHTML = `
+                <div class="px-4 py-8 text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <p class="text-sm">No new notifications</p>
+                </div>
+            `;
+        }
+    }
+
+    // Load notifications into dropdown
+    async function loadNotificationDropdown() {
+        try {
+            if (typeof window.fetchUnreadNotifications === 'function') {
+                await window.fetchUnreadNotifications(true);
+                return;
             }
+
+            const response = await fetch('{{ route('notifications.unread') }}');
+            const data = await response.json();
+            renderNotificationDropdown(data);
         } catch (error) {
             console.error('Error loading notifications:', error);
         }
@@ -190,9 +208,14 @@
         }
     }
     
-    // Load on page load
-    document.addEventListener('DOMContentLoaded', loadNotificationDropdown);
-    
-    // Refresh every 2 minutes
-    setInterval(loadNotificationDropdown, 2 * 60 * 1000);
+    // Share single /notifications/unread poll payload with notifications.js
+    document.addEventListener('notifications:updated', function(event) {
+        renderNotificationDropdown(event.detail);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.fetchUnreadNotifications !== 'function') {
+            loadNotificationDropdown();
+        }
+    });
 </script>

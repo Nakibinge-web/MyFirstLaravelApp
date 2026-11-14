@@ -1,19 +1,25 @@
-version: '3.8'
-
 services:
   # PHP-FPM Service
   php:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      args:
+        PHP_VERSION: "8.5.12"
     container_name: fintrack_php
     restart: unless-stopped
     working_dir: /var/www/html
+    env_file:
+      - .env.docker
     volumes:
       - ./:/var/www/html
+      - vendor_data:/var/www/html/vendor
       - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
       - ./docker/php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./docker/php/entrypoint.sh:/usr/local/bin/fintrack-entrypoint.sh:ro
       - composer_cache:/root/.composer
+    entrypoint: ["sh", "/usr/local/bin/fintrack-entrypoint.sh"]
+    command: ["php-fpm"]
     networks:
       - app-network
     depends_on:
@@ -46,6 +52,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${DB_DATABASE:-financial_tracker}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
       - "3306:3306"
     volumes:
@@ -58,8 +66,8 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 60s
 
   # Redis Service
   redis:
@@ -105,9 +113,13 @@ services:
     build:
       context: .
       dockerfile: docker/node/Dockerfile
+      args:
+        NODE_VERSION: "24.22.1"
     container_name: fintrack_node
     restart: unless-stopped
     working_dir: /var/www/html
+    env_file:
+      - .env.docker
     ports:
       - "5173:5173"
     volumes:
@@ -129,6 +141,8 @@ volumes:
   redis_data:
     driver: local
   composer_cache:
+    driver: local
+  vendor_data:
     driver: local
   node_modules:
     driver: local

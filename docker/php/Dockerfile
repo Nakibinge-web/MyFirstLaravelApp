@@ -1,4 +1,5 @@
-FROM php:8.2-fpm-alpine
+ARG PHP_VERSION=8.5.12
+FROM php:${PHP_VERSION}-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -29,8 +30,8 @@ RUN apk add --no-cache $PHPIZE_DEPS \
     && docker-php-ext-enable redis \
     && apk del $PHPIZE_DEPS
 
-# Copy Composer from official image
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer directly
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 
 # Set working directory
 WORKDIR /var/www/html

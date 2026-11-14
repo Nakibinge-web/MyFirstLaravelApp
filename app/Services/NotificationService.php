@@ -52,7 +52,7 @@ class NotificationService
                     $userId,
                     'budget_alert',
                     'Budget Exceeded!',
-                    "Your {$budget->category->name} budget has been exceeded. You've spent \${$utilization['spent']} of \${$budget->amount}.",
+                    "Your {$budget->category->name} budget has been exceeded. You've spent " . currency_format((float) $utilization['spent']) . " of " . currency_format((float) $budget->amount) . ".",
                     '⚠️',
                     'red'
                 );

@@ -66,8 +66,13 @@ class CurrencyHelper
             // Symbol after amount for these currencies
             return $formatted . ' ' . $symbol;
         }
+
+        // Add a clean space if the symbol is a multi-letter currency code (e.g. "UGX 5,000" instead of "UGX5,000")
+        if (strlen($symbol) > 1) {
+            return $symbol . ' ' . $formatted;
+        }
         
-        // Symbol before amount for most currencies
+        // Symbol directly before amount for single-character symbols (e.g. "$5,000", "€5,000")
         return $symbol . $formatted;
     }
 

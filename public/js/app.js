@@ -200,11 +200,22 @@ function submitFormAjax(formId, successCallback) {
 }
 
 // Number Formatting
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(amount);
+function formatCurrency(amount, currencyCode) {
+    const metaCurrency = document.querySelector('meta[name="user-currency"]')?.content;
+    const selectCurrency = document.getElementById('currency-select')?.value;
+    const activeCurrency = (currencyCode || window.currentAppCurrency || selectCurrency || metaCurrency || 'USD').toUpperCase();
+
+    try {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: activeCurrency
+        }).format(amount);
+    } catch (e) {
+        return activeCurrency + ' ' + Number(amount || 0).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
 }
 
 function formatNumber(number) {

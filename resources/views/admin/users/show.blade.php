@@ -107,16 +107,16 @@
             <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="text-center p-4 bg-green-50 rounded-lg">
                     <p class="text-sm text-gray-500 mb-1">Total Income</p>
-                    <p class="text-xl font-bold text-green-600">${{ number_format($statistics['transactions']['income'], 2) }}</p>
+                    <p class="text-xl font-bold text-green-600">{{ currency_format((float) $statistics['transactions']['income'], $user->currency) }}</p>
                 </div>
                 <div class="text-center p-4 bg-red-50 rounded-lg">
                     <p class="text-sm text-gray-500 mb-1">Total Expenses</p>
-                    <p class="text-xl font-bold text-red-600">${{ number_format($statistics['transactions']['expenses'], 2) }}</p>
+                    <p class="text-xl font-bold text-red-600">{{ currency_format((float) $statistics['transactions']['expenses'], $user->currency) }}</p>
                 </div>
                 <div class="text-center p-4 {{ $statistics['transactions']['net'] >= 0 ? 'bg-blue-50' : 'bg-orange-50' }} rounded-lg">
                     <p class="text-sm text-gray-500 mb-1">Net Amount</p>
                     <p class="text-xl font-bold {{ $statistics['transactions']['net'] >= 0 ? 'text-blue-600' : 'text-orange-600' }}">
-                        ${{ number_format(abs($statistics['transactions']['net']), 2) }}
+                        {{ currency_format((float) abs($statistics['transactions']['net']), $user->currency) }}
                     </p>
                 </div>
             </div>

@@ -171,8 +171,8 @@ class AdminController extends Controller
     {
         $backup = Backup::findOrFail($backupId);
 
-        if (!$backup->exists()) {
-            abort(404, 'Backup file not found');
+        if (!file_exists($backup->path)) {
+            abort(404, 'Backup file not found on disk');
         }
 
         $this->activityLogService->log(

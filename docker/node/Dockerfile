@@ -1,4 +1,5 @@
-FROM node:20-alpine
+ARG NODE_VERSION=24.22.1
+FROM node:${NODE_VERSION}-alpine
 
 # Set working directory
 WORKDIR /var/www/html

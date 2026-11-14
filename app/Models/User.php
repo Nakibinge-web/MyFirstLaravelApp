@@ -78,6 +78,11 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Notification::class);
     }
 
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
     /**
      * Check if the user is an admin.
      */

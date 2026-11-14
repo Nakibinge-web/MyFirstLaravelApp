@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user-currency" content="{{ auth()->check() ? (auth()->user()->currency ?? 'USD') : 'USD' }}">
     <title>{{ config('app.name', 'Personal Financial Tracker') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -69,6 +70,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                     </svg>
                     <span>Categories</span>
+                </a>
+
+                <a href="{{ route('notes.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors {{ request()->routeIs('notes.*') ? 'bg-blue-600 hover:bg-blue-700' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    <span>Notes</span>
                 </a>
 
                 <div class="pt-4 mt-4 border-t border-gray-700">
@@ -185,10 +193,10 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/validation.js') }}"></script>
-    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}?v={{ file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : '1' }}"></script>
     <script src="{{ asset('js/sidebar.js') }}"></script>
     @auth
-    <script src="{{ asset('js/notifications.js') }}"></script>
+    <script src="{{ asset('js/notifications.js') }}?v={{ file_exists(public_path('js/notifications.js')) ? filemtime(public_path('js/notifications.js')) : '1' }}"></script>
     @endauth
 
     <!-- Session Messages -->
@@ -278,29 +286,13 @@
             });
         });
 
-        // Check for unread notifications
+        // Manual refresh helper delegated to shared fetcher in public/js/notifications.js
         async function checkNotifications() {
-            try {
-                const response = await fetch('{{ route('notifications.unread') }}');
-                const data = await response.json();
-                
-                const badge = document.getElementById('sidebarNotificationBadge');
-                if (data.count > 0) {
-                    badge.textContent = data.count > 9 ? '9+' : data.count;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            } catch (error) {
-                console.error('Error checking notifications:', error);
+            if (typeof window.fetchUnreadNotifications === 'function') {
+                return window.fetchUnreadNotifications(true);
             }
+            return null;
         }
-
-        // Check on page load
-        checkNotifications();
-
-        // Check every 2 minutes
-        setInterval(checkNotifications, 2 * 60 * 1000);
     </script>
     @endauth
 </body>
